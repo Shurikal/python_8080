@@ -5,7 +5,7 @@
 static PyTypeObject i8080o_Type;
 
 
-// allocate memory
+// Initialize the i8080 object and set the default values
 static i8080oObject *
 newi8080oObject(PyObject *arg)
 {
@@ -110,10 +110,13 @@ static struct PyModuleDef i8080module = {
     NULL
 };
 
-/* Export function for the module (*must* be called PyInit_xx) */
+/* 
+Export function for the module (*must* be called PyInit_xx) 
+module name is _i8080, from setup.py Extension
+*/
 
 PyMODINIT_FUNC
-PyInit_avr(void)
+PyInit__i8080(void)
 {
     return PyModuleDef_Init(&i8080module);
 }
