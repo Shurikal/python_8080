@@ -59,9 +59,8 @@ i8080o_load_rom(i8080oObject *self, PyObject *args)
     }
 
     FILE *f= fopen(file_path, "rb");    
-    if (f==NULL)    
-    {    
-        PyErr_SetString(PyExc_Exception, "Could not open file");
+    if (f==NULL){    
+        PyErr_SetString(PyExc_FileNotFoundError, "Could not open file");
         return NULL;
     }
 
@@ -179,11 +178,13 @@ i8080_new(PyObject *self, PyObject *args)
 {
     i8080oObject *rv;
 
-    if (!PyArg_ParseTuple(args, ":new"))
+    if (!PyArg_ParseTuple(args, ":new")){
         return NULL;
+    }
     rv = newi8080oObject(args);
-    if (rv == NULL)
+    if (rv == NULL){
         return NULL;
+    }
     return (PyObject *)rv;
 }
 
@@ -192,10 +193,11 @@ get_instruction_size(PyObject *self, PyObject *args)
 {
     uint8_t instruction;
     // parse the argument to a uint8_t
-    if (!PyArg_ParseTuple(args, "b", &instruction))
+    if (!PyArg_ParseTuple(args, "b", &instruction)){
         // throw parse error
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
+    }
     return Py_BuildValue("H", opcodes_size[instruction]);
 }
 
@@ -204,9 +206,13 @@ get_instruction_name(PyObject *self, PyObject *args)
 {
     uint8_t instruction;
     // parse the argument to a uint8_t
-    if (!PyArg_ParseTuple(args, "b", &instruction))
+    if (!PyArg_ParseTuple(args, "b", &instruction)){
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
+    }
+    #ifdef DEBUG
+    printf("Instruction: %d", instruction);
+    #endif
     return Py_BuildValue("s", opcodes_names[instruction]);
 }
 
