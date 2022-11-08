@@ -16,7 +16,8 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
     // return the value of the register
     char *reg;
     if (!PyArg_ParseTuple(args, "s", &reg))
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
 
     if (strcmp(reg, "a") == 0)
         return Py_BuildValue("i", self->A);
@@ -53,21 +54,6 @@ i8080 Object initialization
 
 static i8080oObject *newi8080oObject();
 
-// Function of no arguments returning new i8080oObject object
-static PyObject *
-i8080_new(PyObject *self, PyObject *args)
-{
-    i8080oObject *rv;
-
-    if (!PyArg_ParseTuple(args, ":new"))
-        return NULL;
-    rv = newi8080oObject(args);
-    if (rv == NULL)
-        return NULL;
-    return (PyObject *)rv;
-}
-
-
 // Initialize the i8080 object and set the default values
 static i8080oObject *
 newi8080oObject(PyObject *arg)
@@ -78,6 +64,17 @@ newi8080oObject(PyObject *arg)
         return NULL;
     self->x_attr = NULL;
 
+    // Set the default values
+    self->A = 0;
+    self->B = 0;
+    self->C = 0;
+    self->D = 0;
+    self->E = 0;
+    self->H = 0;
+    self->L = 0;
+    self->PC = 0;
+    self->SP = 0;
+    self->flags = 0;
 
     return self;
 }
@@ -114,6 +111,21 @@ static PyTypeObject i8080o_Type = {
 /* ---------- 
 Module Methods
 ----------  */
+
+
+// Function of no arguments returning new i8080oObject object
+static PyObject *
+i8080_new(PyObject *self, PyObject *args)
+{
+    i8080oObject *rv;
+
+    if (!PyArg_ParseTuple(args, ":new"))
+        return NULL;
+    rv = newi8080oObject(args);
+    if (rv == NULL)
+        return NULL;
+    return (PyObject *)rv;
+}
 
 static PyObject *
 get_instruction_size(PyObject *self, PyObject *args)
