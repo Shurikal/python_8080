@@ -5,6 +5,47 @@
 static PyTypeObject i8080o_Type;
 
 
+/* ---------- 
+i8080 Object methods
+----------  */
+
+
+static PyObject *
+i8080o_get_reg(i8080oObject *self, PyObject *args)
+{
+    // return the value of the register
+    char *reg;
+    if (!PyArg_ParseTuple(args, "s", &reg))
+        Py_RETURN_NONE;
+
+    if (strcmp(reg, "a") == 0)
+        return Py_BuildValue("i", self->A);
+    else if (strcmp(reg, "b") == 0)
+        return Py_BuildValue("i", self->B);
+    else if (strcmp(reg, "c") == 0)
+        return Py_BuildValue("i", self->C);
+    else if (strcmp(reg, "d") == 0)
+        return Py_BuildValue("i", self->D);
+    else if (strcmp(reg, "e") == 0)
+        return Py_BuildValue("i", self->E);
+    else if (strcmp(reg, "h") == 0)
+        return Py_BuildValue("i", self->H);
+    else if (strcmp(reg, "l") == 0)
+        return Py_BuildValue("i", self->L);
+    else if (strcmp(reg, "pc") == 0)
+        return Py_BuildValue("i", self->PC);
+    else if (strcmp(reg, "sp") == 0)
+        return Py_BuildValue("i", self->SP);
+    else if (strcmp(reg, "flags") == 0)
+        return Py_BuildValue("i", self->flags);
+    else {
+        // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
+        PyErr_SetString(PyExc_LookupError, "Invalid register");
+        return NULL;
+    }
+
+}
+
 
 /* ---------- 
 i8080 Object initialization
@@ -37,8 +78,6 @@ newi8080oObject(PyObject *arg)
         return NULL;
     self->x_attr = NULL;
 
-    // set SREG to 0
-    self->sreg = 0;
 
     return self;
 }
@@ -51,6 +90,12 @@ i8080o_dealloc(i8080oObject *self)
     PyObject_Free(self);
 }
 
+
+static PyMethodDef i8080o_methods[] = {
+    {"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
+    {NULL,              NULL}           /* sentinel */
+};
+
 // i8080oObject basic methods
 // https://docs.python.org/3/c-api/typeobj.html
 static PyTypeObject i8080o_Type = {
@@ -62,7 +107,7 @@ static PyTypeObject i8080o_Type = {
     //.tp_setattr = (setattrfunc)AVRo_setattr,
     //.tp_getattro = (getattrofunc)AVRo_getattro,
     .tp_flags = Py_TPFLAGS_DEFAULT,
-    //.tp_methods = AVRo_methods,
+    .tp_methods = i8080o_methods,
 };
 
 

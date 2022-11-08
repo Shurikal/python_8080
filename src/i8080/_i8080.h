@@ -7,7 +7,16 @@
 
 typedef struct {
     PyObject_HEAD
-    uint8_t     sreg;
+    uint8_t     A;
+    uint8_t     B;
+    uint8_t     C;
+    uint8_t     D;
+    uint8_t     E;
+    uint8_t     H;
+    uint8_t     L;
+    uint16_t    SP;
+    uint16_t    PC;
+    uint8_t     flags;
     PyObject    *x_attr;        /* Attributes dictionary */
 } i8080oObject;
 
