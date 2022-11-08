@@ -17,10 +17,10 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
 {
     // return the value of the register
     char *reg;
-    if (!PyArg_ParseTuple(args, "s", &reg))
+    if (!PyArg_ParseTuple(args, "s", &reg)){
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
-
+    }
     if (strcmp(reg, "a") == 0)
         return Py_BuildValue("i", self->A);
     else if (strcmp(reg, "b") == 0)
