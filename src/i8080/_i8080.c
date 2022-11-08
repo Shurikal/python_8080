@@ -5,6 +5,28 @@
 static PyTypeObject i8080o_Type;
 
 
+
+/* ---------- 
+i8080 Object initialization
+----------  */
+
+static i8080oObject *newi8080oObject();
+
+// Function of no arguments returning new i8080oObject object
+static PyObject *
+i8080_new(PyObject *self, PyObject *args)
+{
+    i8080oObject *rv;
+
+    if (!PyArg_ParseTuple(args, ":new"))
+        return NULL;
+    rv = newi8080oObject(args);
+    if (rv == NULL)
+        return NULL;
+    return (PyObject *)rv;
+}
+
+
 // Initialize the i8080 object and set the default values
 static i8080oObject *
 newi8080oObject(PyObject *arg)
@@ -21,7 +43,7 @@ newi8080oObject(PyObject *arg)
     return self;
 }
 
-// deallocate memory
+// deallocate memory method
 static void
 i8080o_dealloc(i8080oObject *self)
 {
@@ -29,6 +51,7 @@ i8080o_dealloc(i8080oObject *self)
     PyObject_Free(self);
 }
 
+// i8080oObject basic methods
 // https://docs.python.org/3/c-api/typeobj.html
 static PyTypeObject i8080o_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -43,33 +66,41 @@ static PyTypeObject i8080o_Type = {
 };
 
 
-/* --------------------------------------------------------------------- */
-
-/* Function of no arguments returning new AVRo object */
+/* ---------- 
+Module Methods
+----------  */
 
 static PyObject *
-i8080_new(PyObject *self, PyObject *args)
+get_instruction_size(PyObject *self, PyObject *args)
 {
-    i8080oObject *rv;
-
-    if (!PyArg_ParseTuple(args, ":new"))
-        return NULL;
-    rv = newi8080oObject(args);
-    if (rv == NULL)
-        return NULL;
-    return (PyObject *)rv;
+    uint8_t instruction;
+    // parse the argument to a uint8_t
+    if (!PyArg_ParseTuple(args, "b", &instruction))
+        Py_RETURN_NONE;
+    return Py_BuildValue("H", opcodes_size[instruction]);
 }
 
+static PyObject *
+get_instruction_name(PyObject *self, PyObject *args)
+{
+    uint8_t instruction;
+    // parse the argument to a uint8_t
+    if (!PyArg_ParseTuple(args, "b", &instruction))
+        Py_RETURN_NONE;
+    return Py_BuildValue("s", opcodes_names[instruction]);
+}
 
-
-/* ---------- */
-
+/* ---------- 
+Module Initialization
+---------- */
 
 /* List of functions defined in the module */
 
 // https://docs.python.org/3/c-api/structures.html?highlight=pymethoddef#c.PyMethodDef
 static PyMethodDef i8080_methods[] = {
-    {"new",             i8080_new,         METH_VARARGS,           PyDoc_STR("new() -> new i8080 object")},
+    {"i8080_new",               i8080_new,                         METH_VARARGS, PyDoc_STR("new() -> new i8080 object")},
+    {"get_instruction_size",    (PyCFunction)get_instruction_size, METH_VARARGS, PyDoc_STR("get_instruction_size")},
+    {"get_instruction_name",    (PyCFunction)get_instruction_name, METH_VARARGS, PyDoc_STR("get_instruction_name")},
     {NULL,              NULL}           /* sentinel */
 };
 
