@@ -17,6 +17,7 @@ typedef struct {
     uint16_t    SP;
     uint16_t    PC;
     uint8_t     flags;
+    uint32_t    rom_size;
     uint8_t     *rom_data;
     PyObject    *x_attr;        /* Attributes dictionary */
 } i8080oObject;

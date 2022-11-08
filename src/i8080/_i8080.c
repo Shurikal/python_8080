@@ -66,10 +66,11 @@ i8080o_load_rom(i8080oObject *self, PyObject *args)
     }
 
     fseek(f, 0L, SEEK_END);    
-    int size = ftell(f);    
+    uint32_t size = ftell(f);    
     fseek(f, 0L, SEEK_SET);
 
     self->rom_data = malloc(size);
+    self->rom_size = size;
 
     fread(self->rom_data, size, 1, f);    
     fclose(f);
@@ -77,6 +78,23 @@ i8080o_load_rom(i8080oObject *self, PyObject *args)
     return Py_BuildValue("i", size);
 }
 
+
+static PyObject *
+i8080o_read_rom(i8080oObject *self, PyObject *args)
+{
+    uint32_t pos;
+    if (!PyArg_ParseTuple(args, "I", &pos)){
+        PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
+    }
+
+    if (pos >= self->rom_size){
+        PyErr_SetString(PyExc_IndexError, "Out of bounds");
+        return NULL;
+    }
+
+    return Py_BuildValue("i", self->rom_data[pos]);
+}
 
 /* ---------- 
 i8080 Object initialization
@@ -131,6 +149,7 @@ i8080o_dealloc(i8080oObject *self)
 static PyMethodDef i8080o_methods[] = {
     {"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
     {"load_rom",               (PyCFunction)i8080o_load_rom,                            METH_VARARGS,                   PyDoc_STR("load rom")},
+    {"read_rom",               (PyCFunction)i8080o_read_rom,                            METH_VARARGS,                   PyDoc_STR("read rom")},
     {NULL,              NULL}           /* sentinel */
 };
 
