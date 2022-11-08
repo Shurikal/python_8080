@@ -2,6 +2,8 @@
 #include "_i8080.h"
 
 
+#define DEBUG
+
 static PyTypeObject i8080o_Type;
 
 
@@ -47,6 +49,34 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
 
 }
 
+static PyObject *
+i8080o_load_rom(i8080oObject *self, PyObject *args)
+{
+    char *file_path;
+    if (!PyArg_ParseTuple(args, "s", &file_path)){
+        PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
+    }
+
+    FILE *f= fopen(file_path, "rb");    
+    if (f==NULL)    
+    {    
+        PyErr_SetString(PyExc_Exception, "Could not open file");
+        return NULL;
+    }
+
+    fseek(f, 0L, SEEK_END);    
+    int size = ftell(f);    
+    fseek(f, 0L, SEEK_SET);
+
+    self->rom_data = malloc(size);
+
+    fread(self->rom_data, size, 1, f);    
+    fclose(f);
+
+    return Py_BuildValue("i", size);
+}
+
 
 /* ---------- 
 i8080 Object initialization
@@ -58,6 +88,9 @@ static i8080oObject *newi8080oObject();
 static i8080oObject *
 newi8080oObject(PyObject *arg)
 {
+    #ifdef DEBUG
+    printf("Initialising i8080 object\n");
+    #endif
     i8080oObject *self;
     self = PyObject_New(i8080oObject, &i8080o_Type);
     if (self == NULL)
@@ -83,13 +116,21 @@ newi8080oObject(PyObject *arg)
 static void
 i8080o_dealloc(i8080oObject *self)
 {
+    #ifdef DEBUG
+    printf("Deallocating memory\n");
+    #endif
+    // free the memory
+    free(self->rom_data);
+
     Py_XDECREF(self->x_attr);
+
     PyObject_Free(self);
 }
 
 
 static PyMethodDef i8080o_methods[] = {
     {"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
+    {"load_rom",               (PyCFunction)i8080o_load_rom,                            METH_VARARGS,                   PyDoc_STR("load rom")},
     {NULL,              NULL}           /* sentinel */
 };
 
@@ -133,7 +174,9 @@ get_instruction_size(PyObject *self, PyObject *args)
     uint8_t instruction;
     // parse the argument to a uint8_t
     if (!PyArg_ParseTuple(args, "b", &instruction))
-        Py_RETURN_NONE;
+        // throw parse error
+        PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
     return Py_BuildValue("H", opcodes_size[instruction]);
 }
 
@@ -143,7 +186,8 @@ get_instruction_name(PyObject *self, PyObject *args)
     uint8_t instruction;
     // parse the argument to a uint8_t
     if (!PyArg_ParseTuple(args, "b", &instruction))
-        Py_RETURN_NONE;
+        PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
     return Py_BuildValue("s", opcodes_names[instruction]);
 }
 
