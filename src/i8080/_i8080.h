@@ -5,6 +5,15 @@
 #include <string.h>
 
 
+typedef struct ConditionCodes {
+	uint8_t		z:1;
+	uint8_t		s:1;
+	uint8_t		p:1;
+	uint8_t		cy:1;
+	uint8_t		ac:1;
+	uint8_t		pad:3;
+} ConditionCodes;
+
 typedef struct {
     PyObject_HEAD
     uint8_t     A;
@@ -16,7 +25,7 @@ typedef struct {
     uint8_t     L;
     uint16_t    SP;
     uint16_t    PC;
-    uint8_t     flags;
+    struct ConditionCodes  cc;
     uint32_t    rom_size;
     uint8_t     *rom_data;
     PyObject    *x_attr;        /* Attributes dictionary */

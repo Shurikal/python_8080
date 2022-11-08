@@ -21,6 +21,7 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
     }
+
     if (strcmp(reg, "a") == 0)
         return Py_BuildValue("i", self->A);
     else if (strcmp(reg, "b") == 0)
@@ -39,8 +40,8 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
         return Py_BuildValue("i", self->PC);
     else if (strcmp(reg, "sp") == 0)
         return Py_BuildValue("i", self->SP);
-    else if (strcmp(reg, "flags") == 0)
-        return Py_BuildValue("i", self->flags);
+    else if (strcmp(reg, "cc") == 0)
+        return Py_BuildValue("i", self->cc);
     else {
         // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
         PyErr_SetString(PyExc_LookupError, "Invalid register");
@@ -124,7 +125,8 @@ newi8080oObject(PyObject *arg)
     self->L = 0;
     self->PC = 0;
     self->SP = 0;
-    self->flags = 0;
+    memset(&self->cc, 0, sizeof(ConditionCodes));
+    self->rom_data = NULL;
 
     return self;
 }
@@ -137,7 +139,9 @@ i8080o_dealloc(i8080oObject *self)
     printf("Deallocating memory\n");
     #endif
     // free the memory
-    free(self->rom_data);
+    if(self->rom_data != NULL){
+        free(self->rom_data);
+    }
 
     Py_XDECREF(self->x_attr);
 
