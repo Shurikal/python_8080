@@ -1,8 +1,11 @@
 #include "Python.h"
 #include "_i8080_module.h"
 #include "_i8080_object.h"
+#include "_i8080_constants.h"
 
 
+extern const uint8_t opcodes_cycles[256];
+extern const char *opcodes_names[256];
 
 /* ---------- 
 i8080 Object methods
@@ -149,31 +152,39 @@ overflow:
 }
 
 static PyObject *
-i8080o_load_rom(i8080oObject *self, PyObject *args)
+i8080o_load_rom(i8080oObject *self, PyObject *args, PyObject *keywds)
 {
     char *file_path;
-    if (!PyArg_ParseTuple(args, "s", &file_path)){
+    uint32_t offset;
+    static char *kwlist[] = {"file_path", "offset", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "sI", kwlist, &file_path, &offset)){
         PyErr_SetString(PyExc_Exception, "Parse error\n");
         return NULL;
     }
 
-    FILE *f= fopen(file_path, "rb");    
-    if (f==NULL){    
+    FILE *f= fopen(file_path, "rb");
+	if (f==NULL)
+	{
         PyErr_SetString(PyExc_FileNotFoundError, "Could not open file\n");
         return NULL;
+	}
+
+	fseek(f, 0L, SEEK_END);
+	int fsize = ftell(f);
+	fseek(f, 0L, SEEK_SET);
+
+    if (fsize + offset > ROM_SIZE){
+        PyErr_SetString(PyExc_OverflowError, "File too large\n");
+        return NULL;
     }
+	
+	uint8_t *buffer = &self->rom_data[offset];
+	fread(buffer, fsize, 1, f);
+	fclose(f);
 
-    fseek(f, 0L, SEEK_END);    
-    uint32_t size = ftell(f);    
-    fseek(f, 0L, SEEK_SET);
 
-    self->rom_data = malloc(size);
-    self->rom_size = size;
-
-    fread(self->rom_data, size, 1, f);    
-    fclose(f);
-
-    return Py_BuildValue("i", size);
+    return Py_BuildValue("i", fsize);
 }
 
 
@@ -186,7 +197,7 @@ i8080o_read_rom(i8080oObject *self, PyObject *args)
         return NULL;
     }
 
-    if (pos >= self->rom_size){
+    if (pos >= ROM_SIZE){
         PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
         return NULL;
     }
@@ -224,7 +235,7 @@ newi8080oObject(PyObject *arg)
     self->PC = 0;
     self->SP = 0;
     memset(&self->CC, 0, sizeof(ConditionCodes));
-    self->rom_data = NULL;
+    self->rom_data = malloc(ROM_SIZE);
 
     return self;
 }
@@ -249,8 +260,8 @@ i8080o_dealloc(i8080oObject *self)
 
 static PyMethodDef i8080o_methods[] = {
     {"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
-    {"set_reg",                 (PyCFunction)(void(*)(void))i8080o_set_reg,            METH_VARARGS | METH_KEYWORDS, PyDoc_STR("set register")},
-    {"load_rom",               (PyCFunction)i8080o_load_rom,                            METH_VARARGS,                   PyDoc_STR("load rom")},
+    {"set_reg",                (PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS, PyDoc_STR("set register")},
+    {"load_rom",               (PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,  PyDoc_STR("load rom")},
     {"read_rom",               (PyCFunction)i8080o_read_rom,                            METH_VARARGS,                   PyDoc_STR("read rom")},
     {NULL,              NULL}           /* sentinel */
 };
