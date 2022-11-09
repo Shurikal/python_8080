@@ -12,6 +12,9 @@ i8080 Object methods
 ----------  */
 
 
+/* ----------
+get register
+----------  */
 static PyObject *
 i8080o_get_reg(i8080oObject *self, PyObject *args)
 {
@@ -41,13 +44,110 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
     else if (strcmp(reg, "sp") == 0)
         return Py_BuildValue("i", self->SP);
     else if (strcmp(reg, "cc") == 0)
-        return Py_BuildValue("i", self->cc);
+        return Py_BuildValue("i", self->CC);
     else {
         // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
         PyErr_SetString(PyExc_LookupError, "Invalid register");
         return NULL;
     }
 
+}
+
+/* ----------
+set register
+----------  */
+static PyObject *
+i8080o_set_reg(i8080oObject *self, PyObject *args, PyObject *keywds)
+{
+    // return the value of the register
+    char *reg;
+    uint16_t val;
+
+    static char *kwlist[] = {"register", "value", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "sH", kwlist, &reg, &val)){
+        PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
+    }
+
+    // print the value
+    printf("Setting register %s to %d", reg, val);
+
+
+    if (strcmp(reg, "a") == 0){
+        // check for overflow
+        if (val > 0xFF){
+            goto overflow;
+        }
+        self->A = val;
+        return Py_BuildValue("i", self->A);
+    }
+    else if (strcmp(reg, "b") == 0){
+        if (val > 0xFF){
+            goto overflow;
+        }
+        self->B = val;
+        return Py_BuildValue("i", self->B);
+    }
+    else if (strcmp(reg, "c") == 0){
+        if (val > 0xFF){
+            goto overflow;
+        }
+        self->C = val;
+        return Py_BuildValue("i", self->C);
+    }
+    else if (strcmp(reg, "d") == 0){
+        if (val > 0xFF){
+            goto overflow;
+        }
+        self->D = val;
+        return Py_BuildValue("i", self->D);
+    }
+    else if (strcmp(reg, "e") == 0){
+        if (val > 0xFF){
+            goto overflow;
+        }
+        self->E = val;
+        return Py_BuildValue("i", self->E);
+    }
+    else if (strcmp(reg, "h") == 0){
+        if (val > 0xFF){
+            goto overflow;
+        }
+        self->H = val;
+        return Py_BuildValue("i", self->H);
+    }
+    else if (strcmp(reg, "l") == 0){
+        if (val > 0xFF){
+            goto overflow;
+        }
+        self->L = val;
+        return Py_BuildValue("i", self->L);
+    }
+    else if (strcmp(reg, "pc") == 0){
+        self->PC = val;
+        return Py_BuildValue("i", self->PC);
+    }
+    else if (strcmp(reg, "sp") == 0){
+        self->SP = val;
+        return Py_BuildValue("i", self->SP);
+    }
+    else if (strcmp(reg, "cc") == 0){
+        if (val > 0xFF){
+            goto overflow;
+        }
+        memcpy(&self->CC, &val, sizeof(ConditionCodes));
+        return Py_BuildValue("i", self->CC);
+    }
+    else {
+        // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
+        PyErr_SetString(PyExc_LookupError, "Invalid register");
+        return NULL;
+    }
+
+overflow:
+        PyErr_SetString(PyExc_OverflowError, "Value too large");
+        return NULL;
 }
 
 static PyObject *
@@ -125,7 +225,8 @@ newi8080oObject(PyObject *arg)
     self->L = 0;
     self->PC = 0;
     self->SP = 0;
-    memset(&self->cc, 0, sizeof(ConditionCodes));
+    memset(&self->CC, 0, sizeof(ConditionCodes));
+    self->CC.z = 1;
     self->rom_data = NULL;
 
     return self;
@@ -151,6 +252,7 @@ i8080o_dealloc(i8080oObject *self)
 
 static PyMethodDef i8080o_methods[] = {
     {"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
+    {"set_reg",                 (PyCFunction)(void(*)(void))i8080o_set_reg,            METH_VARARGS | METH_KEYWORDS, PyDoc_STR("set register")},
     {"load_rom",               (PyCFunction)i8080o_load_rom,                            METH_VARARGS,                   PyDoc_STR("load rom")},
     {"read_rom",               (PyCFunction)i8080o_read_rom,                            METH_VARARGS,                   PyDoc_STR("read rom")},
     {NULL,              NULL}           /* sentinel */

@@ -25,7 +25,7 @@ typedef struct {
     uint8_t     L;
     uint16_t    SP;
     uint16_t    PC;
-    struct ConditionCodes  cc;
+    struct ConditionCodes  CC;
     uint32_t    rom_size;
     uint8_t     *rom_data;
     PyObject    *x_attr;        /* Attributes dictionary */
