@@ -35,4 +35,9 @@ typedef struct {
     PyObject    *x_attr;        /* Attributes dictionary */
 } i8080oObject;
 
+
+i8080oObject *newi8080oObject();
+
+PyTypeObject i8080o_Type;
+
 #endif
