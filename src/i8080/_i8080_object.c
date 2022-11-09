@@ -2,7 +2,6 @@
 #include "_i8080_module.h"
 #include "_i8080_object.h"
 
-#define DEBUG
 
 
 /* ---------- 
@@ -19,7 +18,7 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
     // return the value of the register
     char *reg;
     if (!PyArg_ParseTuple(args, "s", &reg)){
-        PyErr_SetString(PyExc_Exception, "Parse error");
+        PyErr_SetString(PyExc_Exception, "Parse error\n");
         return NULL;
     }
 
@@ -45,7 +44,7 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
         return Py_BuildValue("i", self->CC);
     else {
         // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
-        PyErr_SetString(PyExc_LookupError, "Invalid register");
+        PyErr_SetString(PyExc_LookupError, "Invalid register\n");
         return NULL;
     }
 
@@ -64,13 +63,14 @@ i8080o_set_reg(i8080oObject *self, PyObject *args, PyObject *keywds)
     static char *kwlist[] = {"register", "value", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "sH", kwlist, &reg, &val)){
-        PyErr_SetString(PyExc_Exception, "Parse error");
+        PyErr_SetString(PyExc_Exception, "Parse error\n");
         return NULL;
     }
 
     // print the value
+    #ifdef DEBUG
     printf("Setting register %s to %d", reg, val);
-
+    #endif
 
     if (strcmp(reg, "a") == 0){
         // check for overflow
@@ -139,12 +139,12 @@ i8080o_set_reg(i8080oObject *self, PyObject *args, PyObject *keywds)
     }
     else {
         // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
-        PyErr_SetString(PyExc_LookupError, "Invalid register");
+        PyErr_SetString(PyExc_LookupError, "Invalid register\n");
         return NULL;
     }
 
 overflow:
-        PyErr_SetString(PyExc_OverflowError, "Value too large");
+        PyErr_SetString(PyExc_OverflowError, "Value too large\n");
         return NULL;
 }
 
@@ -153,13 +153,13 @@ i8080o_load_rom(i8080oObject *self, PyObject *args)
 {
     char *file_path;
     if (!PyArg_ParseTuple(args, "s", &file_path)){
-        PyErr_SetString(PyExc_Exception, "Parse error");
+        PyErr_SetString(PyExc_Exception, "Parse error\n");
         return NULL;
     }
 
     FILE *f= fopen(file_path, "rb");    
     if (f==NULL){    
-        PyErr_SetString(PyExc_FileNotFoundError, "Could not open file");
+        PyErr_SetString(PyExc_FileNotFoundError, "Could not open file\n");
         return NULL;
     }
 
@@ -182,12 +182,12 @@ i8080o_read_rom(i8080oObject *self, PyObject *args)
 {
     uint32_t pos;
     if (!PyArg_ParseTuple(args, "I", &pos)){
-        PyErr_SetString(PyExc_Exception, "Parse error");
+        PyErr_SetString(PyExc_Exception, "Parse error\n");
         return NULL;
     }
 
     if (pos >= self->rom_size){
-        PyErr_SetString(PyExc_IndexError, "Out of bounds");
+        PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
         return NULL;
     }
 
@@ -257,6 +257,7 @@ static PyMethodDef i8080o_methods[] = {
 
 // i8080oObject basic methods
 // https://docs.python.org/3/c-api/typeobj.html
+// not static because it is used in the module init function
 PyTypeObject i8080o_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "_i8080.i8080oObject",

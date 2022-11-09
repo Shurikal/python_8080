@@ -4,12 +4,8 @@
 #include "_i8080_constants.h"
 
 
-
 extern const uint8_t opcodes_cycles[256];
 extern const char *opcodes_names[256];
-
-
-
 
 
 /* ---------- 
@@ -84,6 +80,9 @@ PyDoc_STRVAR(module_doc,
 static int64_t
 i8080_exec(PyObject *m)
 {
+    #ifdef DEBUG
+    printf("i8080_exec\n");
+    #endif
     if (PyType_Ready(&i8080o_Type) < 0)
         goto fail;
 
