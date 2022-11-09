@@ -4,11 +4,6 @@
 
 #define DEBUG
 
-int return_1(){
-    return 1;
-}
-
-
 
 /* ---------- 
 i8080 Object methods
@@ -27,9 +22,6 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
     }
-
-    // print int
-    printf("test: %d", return_1());
 
     if (strcmp(reg, "a") == 0)
         return Py_BuildValue("i", self->A);

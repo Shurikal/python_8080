@@ -2,8 +2,6 @@
 #ifndef _I8080_OBJECT_H
 #define _I8080_OBJECT_H
 
-int return_1();
-
 
 #include <stdint.h>
 #include <string.h>
