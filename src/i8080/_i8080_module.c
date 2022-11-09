@@ -1,12 +1,15 @@
 #include "Python.h"
 #include "_i8080_module.h"
-
 #include "_i8080_object.h"
+#include "_i8080_constants.h"
 
 
 #define DEBUG
 
 static PyTypeObject i8080o_Type;
+
+extern const uint8_t opcodes_cycles[256];
+extern const char *opcodes_names[256];
 
 
 /* ---------- 
@@ -308,7 +311,7 @@ get_instruction_size(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
     }
-    return Py_BuildValue("H", opcodes_size[instruction]);
+    return Py_BuildValue("H", opcodes_cycles[instruction]);
 }
 
 static PyObject *
