@@ -1,5 +1,7 @@
 #include "Python.h"
-#include "_i8080.h"
+#include "_i8080_module.h"
+
+#include "_i8080_object.h"
 
 
 #define DEBUG
@@ -24,6 +26,9 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
     }
+
+    // print int
+    printf("test: %d", return_1());
 
     if (strcmp(reg, "a") == 0)
         return Py_BuildValue("i", self->A);
@@ -226,7 +231,6 @@ newi8080oObject(PyObject *arg)
     self->PC = 0;
     self->SP = 0;
     memset(&self->CC, 0, sizeof(ConditionCodes));
-    self->CC.z = 1;
     self->rom_data = NULL;
 
     return self;
