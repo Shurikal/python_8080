@@ -8,7 +8,7 @@ extern const uint8_t opcodes_cycles[256];
 extern const char *opcodes_names[256];
 
 // external defined in _i8080_cpu.c
-extern void (*CPU_FUNCTIONS[4]) (i8080oObject *self);
+extern void (*CPU_FUNCTIONS[256]) (i8080oObject *self);
 
 /* ---------- 
 i8080 Object methods
@@ -21,9 +21,9 @@ run_instruction
 static PyObject *
 i8080o_run_instruction(i8080oObject *self, PyObject *args)
 {
-	printf("From i8080_test");
+	uint8_t instruction = self->memory[self->PC];
 
-	CPU_FUNCTIONS[0](self);
+	CPU_FUNCTIONS[instruction](self);
 
 	self->PC++;
 	
@@ -41,7 +41,7 @@ i8080o_disassemble(i8080oObject *self, PyObject *args){
         return NULL;
     }
 
-    unsigned char *code = &self->rom_data[self->PC];
+    unsigned char *code = &self->memory[self->PC];
 	int opbytes = 1;
 
     char* string;
@@ -508,7 +508,7 @@ i8080o_load_rom(i8080oObject *self, PyObject *args, PyObject *keywds)
         return NULL;
     }
 	
-	uint8_t *buffer = &self->rom_data[offset];
+	uint8_t *buffer = &self->memory[offset];
 	fread(buffer, fsize, 1, f);
 	fclose(f);
 
@@ -533,7 +533,7 @@ i8080o_read_rom(i8080oObject *self, PyObject *args)
         return NULL;
     }
 
-    return Py_BuildValue("i", self->rom_data[pos]);
+    return Py_BuildValue("i", self->memory[pos]);
 }
 
 /* ---------- 
@@ -566,9 +566,9 @@ newi8080oObject(PyObject *arg)
     self->PC = 0;
     self->SP = 0;
     memset(&self->CC, 0, sizeof(ConditionCodes));
-    self->rom_data = malloc(ROM_SIZE);
+    self->memory = malloc(ROM_SIZE);
 
-    if (self->rom_data == NULL){
+    if (self->memory == NULL){
         PyErr_SetString(PyExc_MemoryError, "Could not allocate memory\n");
         return NULL;
     }
@@ -584,8 +584,8 @@ i8080o_dealloc(i8080oObject *self)
     printf("Deallocating memory\n");
     #endif
     // free the memory
-    if(self->rom_data != NULL){
-        free(self->rom_data);
+    if(self->memory != NULL){
+        free(self->memory);
     }
 
     Py_XDECREF(self->x_attr);

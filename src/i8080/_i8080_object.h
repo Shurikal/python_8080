@@ -13,7 +13,8 @@ typedef struct ConditionCodes {
 	uint8_t		p:1;
 	uint8_t		cy:1;
 	uint8_t		ac:1;
-	uint8_t		pad:3;
+    uint8_t     halt:1;
+	uint8_t		pad:2;
 } ConditionCodes;
 
 typedef struct {
@@ -28,7 +29,7 @@ typedef struct {
     uint16_t    SP;
     uint16_t    PC;
     struct ConditionCodes  CC;
-    uint8_t     *rom_data;
+    uint8_t     *memory;
     PyObject    *x_attr;        /* Attributes dictionary */
 } i8080oObject;
 
