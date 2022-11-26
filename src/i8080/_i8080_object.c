@@ -21,9 +21,9 @@ run_instruction
 static PyObject *
 i8080o_run_instruction(i8080oObject *self, PyObject *args)
 {
-	uint8_t instruction = self->memory[self->PC];
+	uint8_t op_code = self->memory[self->PC];
 
-	CPU_FUNCTIONS[instruction](self);
+	CPU_FUNCTIONS[op_code](self);
 
 	self->PC++;
 	
@@ -36,7 +36,7 @@ disassemble instruction
 static PyObject *
 i8080o_disassemble(i8080oObject *self, PyObject *args){
 
-    if(self->PC >= ROM_SIZE){
+    if(self->PC >= MEMORY_SIZE){
         PyErr_SetString(PyExc_ValueError, "PC out of range");
         return NULL;
     }
@@ -503,7 +503,7 @@ i8080o_load_rom(i8080oObject *self, PyObject *args, PyObject *keywds)
 	int fsize = ftell(f);
 	fseek(f, 0L, SEEK_SET);
 
-    if (fsize + offset > ROM_SIZE){
+    if (fsize + offset > MEMORY_SIZE){
         PyErr_SetString(PyExc_OverflowError, "File too large\n");
         return NULL;
     }
@@ -528,7 +528,7 @@ i8080o_read_rom(i8080oObject *self, PyObject *args)
         return NULL;
     }
 
-    if (pos >= ROM_SIZE){
+    if (pos >= MEMORY_SIZE){
         PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
         return NULL;
     }
@@ -566,7 +566,7 @@ newi8080oObject(PyObject *arg)
     self->PC = 0;
     self->SP = 0;
     memset(&self->CC, 0, sizeof(ConditionCodes));
-    self->memory = malloc(ROM_SIZE);
+    self->memory = malloc(MEMORY_SIZE);
 
     if (self->memory == NULL){
         PyErr_SetString(PyExc_MemoryError, "Could not allocate memory\n");

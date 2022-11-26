@@ -6,6 +6,15 @@
 #define DEBUG
 
 
+// checks the parity of a byte
+uint8_t parity_check(uint8_t byte)
+{
+    byte ^= byte >> 4;
+    byte ^= byte >> 2;
+    byte ^= byte >> 1;
+    return (~byte) & 1;
+}
+
 int parity(int x, int size)
 {
 	int i;
@@ -35,435 +44,175 @@ void ArithFlagsA(i8080oObject *self, uint16_t res)
 	self->CC.p = parity(res&0xff, 8);
 }
 
-
-void instr_0x00(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("NOP");
-    #endif
+void update_flags_inr_dcr(i8080oObject *self, uint8_t res) {
+    self->CC.z = (res == 0);
+    self->CC.s = (0x80 == (res & 0x80));
+    self->CC.p = parity(res, 8);
+    self->CC.cy =(0x8 == (res & 0x8));
 }
 
-void instr_0x01(i8080oObject *self) {
+/*
+Carry Bit Instructions
+*/
+
+/*
+CMC Complement Carry
+Flags affected: CY
+*/
+
+void instr_0x3f(i8080oObject *self) {
     #ifdef DEBUG
-    printf("LXI B");
+    printf("CMC");
     #endif
-    self->C = self->memory[self->PC + 1];
-    self->B = self->memory[self->PC + 2];
-    self->PC+=2;
+    self->CC.cy = !self->CC.cy;
 }
 
-void instr_0x02(i8080oObject *self) {
+/*
+STC Set Carry
+*/
+
+void instr_0x37(i8080oObject *self) {
     // not verified
     #ifdef DEBUG
-    printf("STAX B");
+    printf("STC");
     #endif
-    self->memory[self->B * 256 + self->C] = self->A;
+    self->CC.cy = 1;
 }
 
-void instr_0x03(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INX B");
-    #endif
-    self->C++;
-    if (self->C == 0) {
-        self->B++;
-    }
-}
+/*
+Single Register Instructions
+*/
+
+
+/*
+INR Increment Register or Memory
+
+Condition Bits Affected:
+Zero Flag: Set if result is zero; reset otherwise.
+Sign Flag: Set if bit 7 of result is set; reset otherwise.
+Parity Flag: Set if result has even parity; reset otherwise.
+Auxiliary Carry Flag: Set if carry from bit 3; reset otherwise.
+*/
 
 void instr_0x04(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("INR B");
     #endif
     self->B++;
+    update_flags_inr_dcr(self, self->B);
 }
+
+void instr_0x0c(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INR C");
+    #endif
+    self->C++;
+    update_flags_inr_dcr(self, self->C);
+}
+
+void instr_0x14(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INR D");
+    #endif
+    self->D++;
+    update_flags_inr_dcr(self, self->D);
+}
+
+void instr_0x1c(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INR E");
+    #endif
+    self->E++;
+    update_flags_inr_dcr(self, self->E);
+}
+
+void instr_0x24(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INR H");
+    #endif
+    self->H++;
+    update_flags_inr_dcr(self, self->H);
+}
+
+void instr_0x2c(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INR L");
+    #endif
+    self->L++;
+    update_flags_inr_dcr(self, self->L);
+}
+
+void instr_0x34(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INR M");
+    #endif
+    uint16_t addr = (self->H << 8) | self->L;
+    uint8_t res = self->memory[addr] + 1;
+    self->memory[addr] = res;
+    update_flags_inr_dcr(self, res);
+}
+
+void instr_0x3c(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INR A");
+    #endif
+    self->A++;
+    update_flags_inr_dcr(self, self->A);
+}
+
+// END INR
+
+/*
+DCR Decrement Register or Memory
+
+Condition Bits Affected:
+Zero Flag: Set if result is zero; reset otherwise.
+Sign Flag: Set if bit 7 of result is set; reset otherwise.
+Parity Flag: Set if result has even parity; reset otherwise.
+Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
+*/
 
 void instr_0x05(i8080oObject *self) {
     #ifdef DEBUG
     printf("DCR B");
     #endif
-    uint8_t res = self->B - 1;
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->B = res;
-}
-
-void instr_0x06(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("MVI B");
-    #endif
-    self->B = self->memory[self->PC + 1];
-    self->PC+=1;
-}
-
-void instr_0x07(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("RLC");
-    #endif
-    uint8_t res = self->A << 1;
-    self->CC.cy = (0x80 == (self->A & 0x80));
-    self->A = res;
-}
-
-void instr_0x08(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("NOP");
-    #endif
-}
-
-void instr_0x09(i8080oObject * self){
-    uint32_t hl = (self->H << 8) | self->L;
-    uint32_t bc = (self->B << 8) | self->C;
-    uint32_t res = hl + bc;
-    self->H = (res & 0xff00) >> 8;
-    self->L = res & 0xff;
-    self->CC.cy = ((res & 0xffff0000) > 0);
-}
-
-void instr_0x0a(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("LDAX B");
-    #endif
-    self->A = self->memory[self->B * 256 + self->C];
-}
-
-void instr_0x0b(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("DCX B");
-    #endif
-    self->C--;
-    if (self->C == 0xff) {
-        self->B--;
-    }
-}
-
-void instr_0x0c(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INR C");
-    #endif
-    self->C++;
+    self->B--;
+    update_flags_inr_dcr(self, self->B);
 }
 
 void instr_0x0d(i8080oObject *self) {
     #ifdef DEBUG
     printf("DCR C");
     #endif
-    uint8_t res = self->C - 1;
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->C = res;
-}
-
-void instr_0x0e(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("MVI C");
-    #endif
-    self->C = self->memory[self->PC + 1];
-    self->PC+=1;
-}
-
-void instr_0x0f(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("RRC");
-    #endif
-    uint8_t x = self->A;
-    self->A = ((x & 1) << 7) | (x >> 1);
-    self->CC.cy = (1 == (x&1));
-}
-
-void instr_0x10(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("NOP");
-    #endif
-}
-
-void instr_0x11(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("LXI D");
-    #endif
-    self->E = self->memory[self->PC + 1];
-    self->D = self->memory[self->PC + 2];
-    self->PC+=2;
-}
-
-void instr_0x12(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("STAX D");
-    #endif
-    self->memory[self->D * 256 + self->E] = self->A;
-}
-
-void instr_0x13(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("INX D");
-    #endif
-    self->E++;
-    if (self->E == 0) {
-        self->D++;
-    }
-}
-
-void instr_0x14(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INR D");
-    #endif
-    self->D++;
+    self->C--;
+    update_flags_inr_dcr(self, self->C);
 }
 
 void instr_0x15(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("DCR D");
     #endif
-    uint8_t res = self->D - 1;
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->D = res;
-}
-
-void instr_0x16(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("MVI D");
-    #endif
-    self->D = self->memory[self->PC + 1];
-    self->PC+=1;
-}
-
-void instr_0x17(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("RAL");
-    #endif
-    uint8_t res = self->A << 1;
-    res |= self->CC.cy;
-    self->CC.cy = (0x80 == (self->A & 0x80));
-    self->A = res;
-}
-
-void instr_0x18(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("NOP");
-    #endif
-}
-
-void instr_0x19(i8080oObject * self){
-    #ifdef DEBUG
-    printf("DAD D");
-    #endif
-    uint32_t hl = (self->H << 8) | self->L;
-    uint32_t de = (self->D << 8) | self->E;
-    uint32_t res = hl + de;
-    self->H = (res & 0xff00) >> 8;
-    self->L = res & 0xff;
-    //self->CC.cy = ((res & 0xffff0000) > 0);
-    self->CC.cy = ((res & 0xffff0000) != 0);
-}
-
-void instr_0x1a(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("LDAX D");
-    #endif
-    self->A = self->memory[self->D * 256 + self->E];
-}
-
-void instr_0x1b(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("DCX D");
-    #endif
-    self->E--;
-    if (self->E == 0xff) {
-        self->D--;
-    }
-}
-
-void instr_0x1c(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INR E");
-    #endif
-    self->E++;
+    self->D--;
+    update_flags_inr_dcr(self, self->D);
 }
 
 void instr_0x1d(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("DCR E");
     #endif
-    uint8_t res = self->E - 1;
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->E = res;
-}
-
-void instr_0x1e(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("MVI E");
-    #endif
-    self->E = self->memory[self->PC + 1];
-    self->PC+=1;
-}
-
-void instr_0x1f(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("RAR");
-    #endif
-    uint8_t res = self->A >> 1;
-    res |= (self->CC.cy << 7);
-    self->CC.cy = (0x01 == (self->A & 0x01));
-    self->A = res;
-}
-
-void instr_0x20(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("NOP");
-    #endif
-}
-
-void instr_0x21(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("LXI H");
-    #endif
-    self->L = self->memory[self->PC + 1];
-    self->H = self->memory[self->PC + 2];
-    self->PC+=2;
-}
-
-void instr_0x22(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("SHLD");
-    #endif
-    uint16_t addr = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
-    self->memory[addr] = self->L;
-    self->memory[addr + 1] = self->H;
-    self->PC+=2;
-}
-
-void instr_0x23(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("INX H");
-    #endif
-    self->L++;
-    if (self->L == 0) {
-        self->H++;
-    }
-}
-
-void instr_0x24(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INR H");
-    #endif
-    self->H++;
+    self->E--;
+    update_flags_inr_dcr(self, self->E);
 }
 
 void instr_0x25(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("DCR H");
     #endif
-    uint8_t res = self->H - 1;
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->H = res;
-}
-
-void instr_0x26(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("MVI H");
-    #endif
-    self->H = self->memory[self->PC + 1];
-    self->PC+=1;
-}
-
-void instr_0x27(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("DAA");
-    #endif
-    uint8_t res = self->A;
-    if (self->CC.ac || ((self->A & 0x0f) > 9)) {
-        res += 6;
-    }
-    if (self->CC.cy || (self->A > 0x99)) {
-        res += 0x60;
-        self->CC.cy = 1;
-    }
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->A = res;
-}
-
-void instr_0x28(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("NOP");
-    #endif
-}
-
-void instr_0x29(i8080oObject * self){
-    #ifdef DEBUG
-    printf("DAD H");
-    #endif
-    uint32_t hl = (self->H << 8) | self->L;
-    uint32_t res = hl + hl;
-    self->H = (res & 0xff00) >> 8;
-    self->L = res & 0xff;
-    self->CC.cy = ((res & 0xffff0000) != 0);
-}
-
-void instr_0x2a(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("LHLD");
-    #endif
-    uint16_t addr = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
-    self->L = self->memory[addr];
-    self->H = self->memory[addr + 1];
-    self->PC+=2;
-}
-
-void instr_0x2b(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("DCX H");
-    #endif
-    self->L--;
-    if (self->L == 0xff) {
-        self->H--;
-    }
-}
-
-void instr_0x2c(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INR L");
-    #endif
-    self->L++;
+    self->H--;
+    update_flags_inr_dcr(self, self->H);
 }
 
 void instr_0x2d(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("DCR L");
     #endif
@@ -474,182 +223,90 @@ void instr_0x2d(i8080oObject *self) {
     self->L = res;
 }
 
-void instr_0x2e(i8080oObject *self) {
-    // not verified
+void instr_0x35(i8080oObject *self) {
     #ifdef DEBUG
-    printf("MVI L");
+    printf("DCR M");
     #endif
-    self->L = self->memory[self->PC + 1];
-    self->PC+=1;
+    uint16_t addr = (self->H << 8) | self->L;
+    uint8_t res = self->memory[addr] - 1;
+    self->memory[addr] = res;
+    update_flags_inr_dcr(self, res);
 }
 
+void instr_0x3d(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("DCR A");
+    #endif
+    self->A--;
+    update_flags_inr_dcr(self, self->A);
+}
+
+// END DCR
+
+/*
+CMA Complement Accumulator
+*/
+
 void instr_0x2f(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("CMA");
     #endif
     self->A = ~self->A;
 }
 
-void instr_0x30(i8080oObject *self) {
-    // not verified
+/*
+DAA Decimal Adjust Accumulator
+*/
+
+void instr_0x27(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("DAA");
+    #endif
+    // check if lower nibble is greater than 9 or if AC is set
+    if ((self->A & 0x0f) > 9 || self->CC.ac) {
+        self->A += 6;
+        self->CC.ac = 1;
+    } else {
+        self->CC.ac = 0;
+    }
+
+    // check if upper nibble is greater than 9 or if CY is set
+    if ((self->A & 0xf0) > 0x90 || self->CC.cy) {
+        self->A += 0x60;
+        self->CC.cy = 1;
+    } else {
+        self->CC.cy = 0;
+    }
+
+    self->CC.z = (self->A == 0);
+    self->CC.s = (0x80 == (self->A & 0x80));
+    self->CC.p = parity_check(self->A);
+}
+
+/*
+NOP Instruction
+*/
+void instr_0x00(i8080oObject *self) {
     #ifdef DEBUG
     printf("NOP");
     #endif
 }
 
-void instr_0x31(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("LXI SP");
-    #endif
-    self->SP = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
-    self->PC+=2;
-}
+/*
+*** Data Transfer Instructions ***
+*/
 
-void instr_0x32(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("STA");
-    #endif
-    uint16_t addr = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
-    self->memory[addr] = self->A;
-    self->PC+=2;
-}
-
-void instr_0x33(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INX SP");
-    #endif
-    self->SP++;
-}
-
-void instr_0x34(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INR M");
-    #endif
-    uint16_t addr = (self->H << 8) | self->L;
-    uint8_t res = self->memory[addr] + 1;
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->memory[addr] = res;
-}
-
-void instr_0x35(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("DCR M");
-    #endif
-    uint16_t addr = (self->H << 8) | self->L;
-    uint8_t res = self->memory[addr] - 1;
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->memory[addr] = res;
-}
-
-void instr_0x36(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("MVI M");
-    #endif
-    uint16_t addr = (self->H << 8) | self->L;
-    self->memory[addr] = self->memory[self->PC + 1];
-    self->PC+=1;
-}
-
-void instr_0x37(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("STC");
-    #endif
-    self->CC.cy = 1;
-}
-
-void instr_0x38(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("NOP");
-    #endif
-}
-
-void instr_0x39(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("DAD SP");
-    #endif
-    uint32_t sp = self->SP;
-    uint32_t hl = (self->H << 8) | self->L;
-    uint32_t res = sp + hl;
-    self->H = (res & 0xff00) >> 8;
-    self->L = res & 0xff;
-    self->CC.cy = ((res & 0xffff0000) != 0);
-}
-
-void instr_0x3a(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("LDA");
-    #endif
-    uint16_t addr = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
-    self->A = self->memory[addr];
-    self->PC+=2;
-}
-
-void instr_0x3b(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("DCX SP");
-    #endif
-    self->SP--;
-}
-
-void instr_0x3c(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("INR A");
-    #endif
-    self->A++;
-}
-
-void instr_0x3d(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("DCR A");
-    #endif
-    uint8_t res = self->A - 1;
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity(res, 8);
-    self->A = res;
-}
-
-void instr_0x3e(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("MVI A");
-    #endif
-    self->A = self->memory[self->PC + 1];
-    self->PC+=1;
-}
-
-void instr_0x3f(i8080oObject *self) {
-    // not verified
-    #ifdef DEBUG
-    printf("CMC");
-    #endif
-    self->CC.cy = !self->CC.cy;
-}
+/*
+MOV Move Register or Memory to Register
+*/
 
 void instr_0x40(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV B,B");
     #endif
 }
 
 void instr_0x41(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV B,C");
     #endif
@@ -657,7 +314,6 @@ void instr_0x41(i8080oObject *self) {
 }
 
 void instr_0x42(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV B,D");
     #endif
@@ -665,7 +321,6 @@ void instr_0x42(i8080oObject *self) {
 }
 
 void instr_0x43(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV B,E");
     #endif
@@ -673,7 +328,6 @@ void instr_0x43(i8080oObject *self) {
 }
 
 void instr_0x44(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV B,H");
     #endif
@@ -681,7 +335,6 @@ void instr_0x44(i8080oObject *self) {
 }
 
 void instr_0x45(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV B,L");
     #endif
@@ -689,7 +342,6 @@ void instr_0x45(i8080oObject *self) {
 }
 
 void instr_0x46(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV B,M");
     #endif
@@ -698,7 +350,6 @@ void instr_0x46(i8080oObject *self) {
 }
 
 void instr_0x47(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV B,A");
     #endif
@@ -706,7 +357,6 @@ void instr_0x47(i8080oObject *self) {
 }
 
 void instr_0x48(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV C,B");
     #endif
@@ -714,14 +364,12 @@ void instr_0x48(i8080oObject *self) {
 }
 
 void instr_0x49(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV C,C");
     #endif
 }
 
 void instr_0x4a(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV C,D");
     #endif
@@ -729,7 +377,6 @@ void instr_0x4a(i8080oObject *self) {
 }
 
 void instr_0x4b(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV C,E");
     #endif
@@ -737,7 +384,6 @@ void instr_0x4b(i8080oObject *self) {
 }
 
 void instr_0x4c(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV C,H");
     #endif
@@ -745,7 +391,6 @@ void instr_0x4c(i8080oObject *self) {
 }
 
 void instr_0x4d(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV C,L");
     #endif
@@ -753,7 +398,6 @@ void instr_0x4d(i8080oObject *self) {
 }
 
 void instr_0x4e(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV C,M");
     #endif
@@ -762,7 +406,6 @@ void instr_0x4e(i8080oObject *self) {
 }
 
 void instr_0x4f(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV C,A");
     #endif
@@ -770,7 +413,6 @@ void instr_0x4f(i8080oObject *self) {
 }
 
 void instr_0x50(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV D,B");
     #endif
@@ -778,7 +420,6 @@ void instr_0x50(i8080oObject *self) {
 }
 
 void instr_0x51(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV D,C");
     #endif
@@ -786,14 +427,12 @@ void instr_0x51(i8080oObject *self) {
 }
 
 void instr_0x52(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV D,D");
     #endif
 }
 
 void instr_0x53(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV D,E");
     #endif
@@ -801,7 +440,6 @@ void instr_0x53(i8080oObject *self) {
 }
 
 void instr_0x54(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV D,H");
     #endif
@@ -809,7 +447,6 @@ void instr_0x54(i8080oObject *self) {
 }
 
 void instr_0x55(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV D,L");
     #endif
@@ -825,7 +462,6 @@ void instr_0x56(i8080oObject *self) {
 }
 
 void instr_0x57(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV D,A");
     #endif
@@ -833,7 +469,6 @@ void instr_0x57(i8080oObject *self) {
 }
 
 void instr_0x58(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV E,B");
     #endif
@@ -841,7 +476,6 @@ void instr_0x58(i8080oObject *self) {
 }
 
 void instr_0x59(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV E,C");
     #endif
@@ -849,7 +483,6 @@ void instr_0x59(i8080oObject *self) {
 }
 
 void instr_0x5a(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV E,D");
     #endif
@@ -857,14 +490,12 @@ void instr_0x5a(i8080oObject *self) {
 }
 
 void instr_0x5b(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV E,E");
     #endif
 }
 
 void instr_0x5c(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV E,H");
     #endif
@@ -872,7 +503,6 @@ void instr_0x5c(i8080oObject *self) {
 }
 
 void instr_0x5d(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV E,L");
     #endif
@@ -888,7 +518,6 @@ void instr_0x5e(i8080oObject *self) {
 }
 
 void instr_0x5f(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV E,A");
     #endif
@@ -896,7 +525,6 @@ void instr_0x5f(i8080oObject *self) {
 }
 
 void instr_0x60(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV H,B");
     #endif
@@ -904,7 +532,6 @@ void instr_0x60(i8080oObject *self) {
 }
 
 void instr_0x61(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV H,C");
     #endif
@@ -912,7 +539,6 @@ void instr_0x61(i8080oObject *self) {
 }
 
 void instr_0x62(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV H,D");
     #endif
@@ -920,7 +546,6 @@ void instr_0x62(i8080oObject *self) {
 }
 
 void instr_0x63(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV H,E");
     #endif
@@ -928,14 +553,12 @@ void instr_0x63(i8080oObject *self) {
 }
 
 void instr_0x64(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV H,H");
     #endif
 }
 
 void instr_0x65(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV H,L");
     #endif
@@ -951,7 +574,6 @@ void instr_0x66(i8080oObject *self) {
 }
 
 void instr_0x67(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV H,A");
     #endif
@@ -959,7 +581,6 @@ void instr_0x67(i8080oObject *self) {
 }
 
 void instr_0x68(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV L,B");
     #endif
@@ -967,7 +588,6 @@ void instr_0x68(i8080oObject *self) {
 }
 
 void instr_0x69(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV L,C");
     #endif
@@ -975,7 +595,6 @@ void instr_0x69(i8080oObject *self) {
 }
 
 void instr_0x6a(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV L,D");
     #endif
@@ -983,7 +602,6 @@ void instr_0x6a(i8080oObject *self) {
 }
 
 void instr_0x6b(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV L,E");
     #endif
@@ -991,7 +609,6 @@ void instr_0x6b(i8080oObject *self) {
 }
 
 void instr_0x6c(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV L,H");
     #endif
@@ -999,7 +616,6 @@ void instr_0x6c(i8080oObject *self) {
 }
 
 void instr_0x6d(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("MOV L,L");
     #endif
@@ -1068,13 +684,6 @@ void instr_0x75(i8080oObject *self) {
     self->memory[addr] = self->L;
 }
 
-void instr_0x76(i8080oObject *self) {
-    #ifdef DEBUG
-    printf("HLT");
-    #endif
-    self->CC.halt = 1;
-}
-
 void instr_0x77(i8080oObject *self) {
     #ifdef DEBUG
     printf("MOV M,A");
@@ -1139,232 +748,294 @@ void instr_0x7f(i8080oObject *self) {
     #endif
 }
 
+void instr_0x02(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("STAX B");
+    #endif
+    uint16_t addr = (self->B << 8) | self->C;
+    self->memory[addr] = self->A;
+}
+
+void instr_0x12(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("STAX D");
+    #endif
+    uint16_t addr = (self->D << 8) | self->E;
+    self->memory[addr] = self->A;
+}
+
+void instr_0x0a(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("LDAX B");
+    #endif
+    uint16_t addr = (self->B << 8) | self->C;
+    self->A = self->memory[addr];
+}
+
+void instr_0x1a(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("LDAX D");
+    #endif
+    uint16_t addr = (self->D << 8) | self->E;
+    self->A = self->memory[addr];
+}
+
+// END DATA TRANSFER INSTRUCTIONS
+
+/*
+*** Register or Memory to Accumulator Instructions ***
+*/
+
+/*
+ADD ADD Register or Memory to Accumulator
+Condition Bits Affected:
+Carry Flag: Set if carry from bit 7; reset otherwise.
+Zero Flag: Set if result is zero; reset otherwise.
+Sign Flag: Set if bit 7 of result is set; reset otherwise.
+Parity Flag: Set if result has even parity; reset otherwise.
+Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
+*/
+
+void update_flags_add(i8080oObject *self, uint16_t result){
+    self->CC.cy = (result & 0x100) >> 8;
+    self->CC.z = (result == 0);
+    self->CC.s = (result & 0x80) >> 7;
+    self->CC.p = parity_check((uint8_t)(result & 0xff));
+    self->CC.ac = (result & 0x10) >> 4;
+}
+
 void instr_0x80(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADD B");
     #endif
     uint16_t result = self->A + self->B;
     self->A = result & 0xff;
-    self->CC.cy = (result > 0xff);
-    self->CC.z = (self->A == 0);
-    self->CC.s = (self->A & 0x80);
-    self->CC.p = parity(self->A, 8);
+    update_flags_add(self, result);
 }
 
 void instr_0x81(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADD C");
     #endif
     uint16_t result = self->A + self->C;
     self->A = result & 0xff;
-    self->CC.cy = (result > 0xff);
-    self->CC.z = (self->A == 0);
-    self->CC.s = (self->A & 0x80);
-    self->CC.p = parity(self->A, 8);
+    update_flags_add(self, result);
 }
 
 void instr_0x82(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADD D");
     #endif
     uint16_t result = self->A + self->D;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x83(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADD E");
     #endif
     uint16_t result = self->A + self->E;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x84(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADD H");
     #endif
     uint16_t result = self->A + self->H;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x85(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADD L");
     #endif
     uint16_t result = self->A + self->L;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x86(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADD M");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
     uint16_t result = self->A + self->memory[addr];
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x87(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADD A");
     #endif
     uint16_t result = self->A + self->A;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
+// END ADD
+
+/*
+ADC Add Register or Memory to Accumulator with Carry
+
+Condition Bits Affected:
+Carry Flag: Set if carry from bit 7; reset otherwise.
+Zero Flag: Set if result is zero; reset otherwise.
+Sign Flag: Set if bit 7 of result is set; reset otherwise.
+Parity Flag: Set if result has even parity; reset otherwise.
+Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
+*/
+
 void instr_0x88(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADC B");
     #endif
     uint16_t result = self->A + self->B + self->CC.cy;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x89(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADC C");
     #endif
     uint16_t result = self->A + self->C + self->CC.cy;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x8a(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADC D");
     #endif
     uint16_t result = self->A + self->D + self->CC.cy;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x8b(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADC E");
     #endif
     uint16_t result = self->A + self->E + self->CC.cy;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x8c(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADC H");
     #endif
     uint16_t result = self->A + self->H + self->CC.cy;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x8d(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADC L");
     #endif
     uint16_t result = self->A + self->L + self->CC.cy;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x8e(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADC M");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
     uint16_t result = self->A + self->memory[addr] + self->CC.cy;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
 }
 
 void instr_0x8f(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("ADC A");
     #endif
     uint16_t result = self->A + self->A + self->CC.cy;
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_add(self, result);
+}
+
+// END ADC
+
+/*
+SUB Subtract Register or Memory from Accumulator
+
+Condition Bits Affected:
+Carry Flag: Reset if borrow from bit 7; set otherwise.
+Zero Flag: Set if result is zero; reset otherwise.
+Sign Flag: Set if bit 7 of result is set; reset otherwise.
+Parity Flag: Set if result has even parity; reset otherwise.
+Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
+*/
+
+void update_flags_sub(i8080oObject self, uint16_t result){
+    self->CC.cy = !(result > 0xff); // reset carry if result is greater than 0xff
+    self->CC.z = ((result & 0xff) == 0);
+    self->CC.s = ((result & 0x80) != 0);
+    self->CC.p = parity_check(result & 0xff);
+    self->CC.ac = (result & 0x10) >> 4;
 }
 
 void instr_0x90(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("SUB B");
     #endif
-    uint16_t result = self->A - self->B;
+    uint16_t result = self->A + (~self->B) + 1; // add the 2's complement of B and 1
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_sub(self, result);
 }
 
 void instr_0x91(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("SUB C");
     #endif
-    uint16_t result = self->A - self->C;
+    uint16_t result = self->A + (~self->C) + 1; // add the 2's complement of C and 1
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_sub(self, result);
 }
 
 void instr_0x92(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("SUB D");
     #endif
-    uint16_t result = self->A - self->D;
+    uint16_t result = self->A + (~self->D) + 1; // add the 2's complement of D and 1
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_sub(self, result);
 }
 
 void instr_0x93(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("SUB E");
     #endif
-    uint16_t result = self->A - self->E;
+    uint16_t result = self->A + (~self->E) + 1; // add the 2's complement of E and 1
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_sub(self, result);
 }
 
 void instr_0x94(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("SUB H");
     #endif
-    uint16_t result = self->A - self->H;
+    uint16_t result = self->A + (~self->H) + 1; // add the 2's complement of H and 1
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_sub(self, result);
 }
 
 void instr_0x95(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("SUB L");
     #endif
-    uint16_t result = self->A - self->L;
+    uint16_t result = self->A + (~self->L) + 1; // add the 2's complement of L and 1
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_sub(self, result);
 }
 
 void instr_0x96(i8080oObject *self) {
@@ -1373,20 +1044,435 @@ void instr_0x96(i8080oObject *self) {
     printf("SUB M");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
-    uint16_t result = self->A - self->memory[addr];
+    uint16_t result = self->A + (~self->memory[addr]) + 1; // add the 2's complement of M and 1
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_sub(self, result);
 }
 
 void instr_0x97(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("SUB A");
     #endif
-    uint16_t result = self->A - self->A;
+    uint16_t result = self->A + (~self->A) + 1; // add the 2's complement of A and 1
     self->A = result & 0xff;
-    ArithFlagsA(self, result);
+    update_flags_sub(self, result);
 }
+
+// END SUB
+
+
+
+void instr_0x01(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("LXI B");
+    #endif
+    self->C = self->memory[self->PC + 1];
+    self->B = self->memory[self->PC + 2];
+    self->PC+=2;
+}
+
+
+
+void instr_0x03(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("INX B");
+    #endif
+    self->C++;
+    if (self->C == 0) {
+        self->B++;
+    }
+}
+
+void instr_0x06(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("MVI B");
+    #endif
+    self->B = self->memory[self->PC + 1];
+    self->PC+=1;
+}
+
+void instr_0x07(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("RLC");
+    #endif
+    uint8_t res = self->A << 1;
+    self->CC.cy = (0x80 == (self->A & 0x80));
+    self->A = res;
+}
+
+void instr_0x08(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("NOP");
+    #endif
+}
+
+void instr_0x09(i8080oObject * self){
+    uint32_t hl = (self->H << 8) | self->L;
+    uint32_t bc = (self->B << 8) | self->C;
+    uint32_t res = hl + bc;
+    self->H = (res & 0xff00) >> 8;
+    self->L = res & 0xff;
+    self->CC.cy = ((res & 0xffff0000) > 0);
+}
+
+
+
+void instr_0x0b(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("DCX B");
+    #endif
+    self->C--;
+    if (self->C == 0xff) {
+        self->B--;
+    }
+}
+
+
+
+
+
+void instr_0x0e(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("MVI C");
+    #endif
+    self->C = self->memory[self->PC + 1];
+    self->PC+=1;
+}
+
+void instr_0x0f(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("RRC");
+    #endif
+    uint8_t x = self->A;
+    self->A = ((x & 1) << 7) | (x >> 1);
+    self->CC.cy = (1 == (x&1));
+}
+
+void instr_0x10(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("NOP");
+    #endif
+}
+
+void instr_0x11(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("LXI D");
+    #endif
+    self->E = self->memory[self->PC + 1];
+    self->D = self->memory[self->PC + 2];
+    self->PC+=2;
+}
+
+
+
+void instr_0x13(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INX D");
+    #endif
+    self->E++;
+    if (self->E == 0) {
+        self->D++;
+    }
+}
+
+
+
+
+
+void instr_0x16(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("MVI D");
+    #endif
+    self->D = self->memory[self->PC + 1];
+    self->PC+=1;
+}
+
+void instr_0x17(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("RAL");
+    #endif
+    uint8_t res = self->A << 1;
+    res |= self->CC.cy;
+    self->CC.cy = (0x80 == (self->A & 0x80));
+    self->A = res;
+}
+
+void instr_0x18(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("NOP");
+    #endif
+}
+
+void instr_0x19(i8080oObject * self){
+    #ifdef DEBUG
+    printf("DAD D");
+    #endif
+    uint32_t hl = (self->H << 8) | self->L;
+    uint32_t de = (self->D << 8) | self->E;
+    uint32_t res = hl + de;
+    self->H = (res & 0xff00) >> 8;
+    self->L = res & 0xff;
+    //self->CC.cy = ((res & 0xffff0000) > 0);
+    self->CC.cy = ((res & 0xffff0000) != 0);
+}
+
+
+
+void instr_0x1b(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("DCX D");
+    #endif
+    self->E--;
+    if (self->E == 0xff) {
+        self->D--;
+    }
+}
+
+
+
+
+void instr_0x1e(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("MVI E");
+    #endif
+    self->E = self->memory[self->PC + 1];
+    self->PC+=1;
+}
+
+void instr_0x1f(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("RAR");
+    #endif
+    uint8_t res = self->A >> 1;
+    res |= (self->CC.cy << 7);
+    self->CC.cy = (0x01 == (self->A & 0x01));
+    self->A = res;
+}
+
+void instr_0x20(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("NOP");
+    #endif
+}
+
+void instr_0x21(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("LXI H");
+    #endif
+    self->L = self->memory[self->PC + 1];
+    self->H = self->memory[self->PC + 2];
+    self->PC+=2;
+}
+
+void instr_0x22(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("SHLD");
+    #endif
+    uint16_t addr = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
+    self->memory[addr] = self->L;
+    self->memory[addr + 1] = self->H;
+    self->PC+=2;
+}
+
+void instr_0x23(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("INX H");
+    #endif
+    self->L++;
+    if (self->L == 0) {
+        self->H++;
+    }
+}
+
+
+
+
+
+void instr_0x26(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("MVI H");
+    #endif
+    self->H = self->memory[self->PC + 1];
+    self->PC+=1;
+}
+
+
+
+void instr_0x28(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("NOP");
+    #endif
+}
+
+void instr_0x29(i8080oObject * self){
+    #ifdef DEBUG
+    printf("DAD H");
+    #endif
+    uint32_t hl = (self->H << 8) | self->L;
+    uint32_t res = hl + hl;
+    self->H = (res & 0xff00) >> 8;
+    self->L = res & 0xff;
+    self->CC.cy = ((res & 0xffff0000) != 0);
+}
+
+void instr_0x2a(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("LHLD");
+    #endif
+    uint16_t addr = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
+    self->L = self->memory[addr];
+    self->H = self->memory[addr + 1];
+    self->PC+=2;
+}
+
+void instr_0x2b(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("DCX H");
+    #endif
+    self->L--;
+    if (self->L == 0xff) {
+        self->H--;
+    }
+}
+
+
+
+
+
+void instr_0x2e(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("MVI L");
+    #endif
+    self->L = self->memory[self->PC + 1];
+    self->PC+=1;
+}
+
+
+
+void instr_0x30(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("NOP");
+    #endif
+}
+
+void instr_0x31(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("LXI SP");
+    #endif
+    self->SP = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
+    self->PC+=2;
+}
+
+void instr_0x32(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("STA");
+    #endif
+    uint16_t addr = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
+    self->memory[addr] = self->A;
+    self->PC+=2;
+}
+
+void instr_0x33(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("INX SP");
+    #endif
+    self->SP++;
+}
+
+
+
+
+
+void instr_0x36(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("MVI M");
+    #endif
+    uint16_t addr = (self->H << 8) | self->L;
+    self->memory[addr] = self->memory[self->PC + 1];
+    self->PC+=1;
+}
+
+
+void instr_0x38(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("NOP");
+    #endif
+}
+
+void instr_0x39(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("DAD SP");
+    #endif
+    uint32_t sp = self->SP;
+    uint32_t hl = (self->H << 8) | self->L;
+    uint32_t res = sp + hl;
+    self->H = (res & 0xff00) >> 8;
+    self->L = res & 0xff;
+    self->CC.cy = ((res & 0xffff0000) != 0);
+}
+
+void instr_0x3a(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("LDA");
+    #endif
+    uint16_t addr = self->memory[self->PC + 2] * 256 + self->memory[self->PC + 1];
+    self->A = self->memory[addr];
+    self->PC+=2;
+}
+
+void instr_0x3b(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("DCX SP");
+    #endif
+    self->SP--;
+}
+
+
+
+
+
+void instr_0x3e(i8080oObject *self) {
+    // not verified
+    #ifdef DEBUG
+    printf("MVI A");
+    #endif
+    self->A = self->memory[self->PC + 1];
+    self->PC+=1;
+}
+
+
+
+void instr_0x76(i8080oObject *self) {
+    #ifdef DEBUG
+    printf("HLT");
+    #endif
+    self->CC.halt = 1;
+}
+
+
 
 void instr_0x98(i8080oObject *self) {
     // not verified
