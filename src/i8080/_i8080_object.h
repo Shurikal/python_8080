@@ -32,9 +32,10 @@ typedef struct {
     PyObject    *x_attr;        /* Attributes dictionary */
 } i8080oObject;
 
-
+// Method to create a new i8080oObject
 i8080oObject *newi8080oObject();
 
+// Definition of the i8080oObject type
 PyTypeObject i8080o_Type;
 
 #endif

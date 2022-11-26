@@ -2,15 +2,35 @@
 #include "_i8080_module.h"
 #include "_i8080_object.h"
 #include "_i8080_constants.h"
-
+#include "_i8080_cpu.h"
 
 extern const uint8_t opcodes_cycles[256];
 extern const char *opcodes_names[256];
+
+extern void (*CPU_FUNCTIONS[4]) ();
 
 /* ---------- 
 i8080 Object methods
 ----------  */
 
+/* ----------
+function test
+---------- */
+
+static PyObject *
+i8080o_test(i8080oObject *self, PyObject *args)
+{
+	printf("From i8080_test");
+
+	CPU_FUNCTIONS[0]();
+	
+	
+	Py_RETURN_NONE;	
+}
+
+/* ----------
+disassemble instruction
+----------  */
 static PyObject *
 i8080o_disassemble(i8080oObject *self, PyObject *args){
 
@@ -307,7 +327,11 @@ i8080o_disassemble(i8080oObject *self, PyObject *args){
 
     self->PC += opbytes;
 
-    return Py_BuildValue("is", opbytes, string);
+	PyObject *ret =Py_BuildValue("is", opbytes, string);
+
+	free(string);
+
+    return ret;
 }
 
 
@@ -371,7 +395,7 @@ i8080o_set_reg(i8080oObject *self, PyObject *args, PyObject *keywds)
 
     // print the value
     #ifdef DEBUG
-    printf("Setting register %s to %d", reg, val);
+    printf("Setting register %s to %d\n	", reg, val);
     #endif
 
     if (strcmp(reg, "a") == 0){
@@ -450,6 +474,10 @@ overflow:
         return NULL;
 }
 
+
+/* ----------
+load rom
+----------  */
 static PyObject *
 i8080o_load_rom(i8080oObject *self, PyObject *args, PyObject *keywds)
 {
@@ -486,7 +514,9 @@ i8080o_load_rom(i8080oObject *self, PyObject *args, PyObject *keywds)
     return Py_BuildValue("i", fsize);
 }
 
-
+/* ----------
+read rom at address
+----------  */
 static PyObject *
 i8080o_read_rom(i8080oObject *self, PyObject *args)
 {
@@ -563,12 +593,13 @@ i8080o_dealloc(i8080oObject *self)
 
 
 static PyMethodDef i8080o_methods[] = {
-    {"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
+	{"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
     {"set_reg",                (PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS, PyDoc_STR("set register")},
     {"disassemble",                (PyCFunction)i8080o_disassemble,                             METH_VARARGS,                   PyDoc_STR("get register A")},
     {"load_rom",               (PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,  PyDoc_STR("load rom")},
     {"read_rom",               (PyCFunction)i8080o_read_rom,                            METH_VARARGS,                   PyDoc_STR("read rom")},
-    {NULL,              NULL}           /* sentinel */
+    {"test",                   (PyCFunction)i8080o_test,                                METH_NOARGS,                    PyDoc_STR("test")},
+	{NULL,              NULL}           /* sentinel */
 };
 
 // i8080oObject basic methods
