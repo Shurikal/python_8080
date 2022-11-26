@@ -13,8 +13,10 @@ typedef struct ConditionCodes {
 	uint8_t		p:1;
 	uint8_t		cy:1;
 	uint8_t		ac:1;
+    // Custom added flags
     uint8_t     halt:1;
-	uint8_t		pad:2;
+    uint8_t     int_enable:1;
+	uint8_t		pad:1;
 } ConditionCodes;
 
 typedef struct {

@@ -536,6 +536,29 @@ i8080o_read_rom(i8080oObject *self, PyObject *args)
     return Py_BuildValue("i", self->memory[pos]);
 }
 
+/*
+set rom at address
+*/
+static PyObject *
+i8080o_set_rom(i8080oObject *self, PyObject *args)
+{
+	uint32_t pos;
+	uint8_t val;
+	if (!PyArg_ParseTuple(args, "IB", &pos, &val)){
+		PyErr_SetString(PyExc_Exception, "Parse error\n");
+		return NULL;
+	}
+
+	if (pos >= MEMORY_SIZE){
+		PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
+		return NULL;
+	}
+
+	self->memory[pos] = val;
+
+	return Py_BuildValue("i", self->memory[pos]);
+}
+
 /* ---------- 
 i8080 Object initialization
 ----------  */
@@ -600,7 +623,8 @@ static PyMethodDef i8080o_methods[] = {
     {"disassemble",            (PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("get register A")},
     {"load_rom",               (PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("load rom")},
     {"read_rom",               (PyCFunction)i8080o_read_rom,                            METH_VARARGS,                   PyDoc_STR("read rom")},
-    {"run_instruction",        (PyCFunction)i8080o_run_instruction,                     METH_NOARGS,                    PyDoc_STR("run instruction")},
+    {"set_rom",                (PyCFunction)i8080o_set_rom,                             METH_VARARGS,                   PyDoc_STR("set rom")},
+	{"run_instruction",        (PyCFunction)i8080o_run_instruction,                     METH_NOARGS,                    PyDoc_STR("run instruction")},
 	{NULL,              NULL}           /* sentinel */
 };
 
