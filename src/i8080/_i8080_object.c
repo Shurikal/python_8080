@@ -7,23 +7,25 @@
 extern const uint8_t opcodes_cycles[256];
 extern const char *opcodes_names[256];
 
-extern void (*CPU_FUNCTIONS[4]) ();
+// external defined in _i8080_cpu.c
+extern void (*CPU_FUNCTIONS[4]) (i8080oObject *self);
 
 /* ---------- 
 i8080 Object methods
 ----------  */
 
 /* ----------
-function test
+run_instruction
 ---------- */
 
 static PyObject *
-i8080o_test(i8080oObject *self, PyObject *args)
+i8080o_run_instruction(i8080oObject *self, PyObject *args)
 {
 	printf("From i8080_test");
 
-	CPU_FUNCTIONS[0]();
-	
+	CPU_FUNCTIONS[0](self);
+
+	self->PC++;
 	
 	Py_RETURN_NONE;	
 }
@@ -594,11 +596,11 @@ i8080o_dealloc(i8080oObject *self)
 
 static PyMethodDef i8080o_methods[] = {
 	{"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
-    {"set_reg",                (PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS, PyDoc_STR("set register")},
-    {"disassemble",                (PyCFunction)i8080o_disassemble,                             METH_VARARGS,                   PyDoc_STR("get register A")},
-    {"load_rom",               (PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,  PyDoc_STR("load rom")},
+    {"set_reg",                (PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set register")},
+    {"disassemble",            (PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("get register A")},
+    {"load_rom",               (PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("load rom")},
     {"read_rom",               (PyCFunction)i8080o_read_rom,                            METH_VARARGS,                   PyDoc_STR("read rom")},
-    {"test",                   (PyCFunction)i8080o_test,                                METH_NOARGS,                    PyDoc_STR("test")},
+    {"run_instruction",        (PyCFunction)i8080o_run_instruction,                     METH_NOARGS,                    PyDoc_STR("run instruction")},
 	{NULL,              NULL}           /* sentinel */
 };
 
