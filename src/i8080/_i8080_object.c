@@ -21,11 +21,13 @@ run_instruction
 static PyObject *
 i8080o_run_instruction(i8080oObject *self, PyObject *args)
 {
+	#ifdef DEBUG
+	printf("%04x - ", self->PC);
+	#endif
+
 	uint8_t op_code = self->memory[self->PC];
 
 	CPU_FUNCTIONS[op_code](self);
-
-	self->PC++;
 	
 	Py_RETURN_NONE;	
 }
@@ -395,9 +397,10 @@ i8080o_set_reg(i8080oObject *self, PyObject *args, PyObject *keywds)
         return NULL;
     }
 
-    // print the value
+    
     #ifdef DEBUG
-    printf("Setting register %s to %d\n	", reg, val);
+	// print the value
+    // printf("Setting register %s to %d\n	", reg, val);
     #endif
 
     if (strcmp(reg, "a") == 0){
@@ -520,7 +523,7 @@ i8080o_load_rom(i8080oObject *self, PyObject *args, PyObject *keywds)
 read rom at address
 ----------  */
 static PyObject *
-i8080o_read_rom(i8080oObject *self, PyObject *args)
+i8080o_read_memory(i8080oObject *self, PyObject *args)
 {
     uint32_t pos;
     if (!PyArg_ParseTuple(args, "I", &pos)){
@@ -540,7 +543,7 @@ i8080o_read_rom(i8080oObject *self, PyObject *args)
 set rom at address
 */
 static PyObject *
-i8080o_set_rom(i8080oObject *self, PyObject *args)
+i8080o_set_memory(i8080oObject *self, PyObject *args)
 {
 	uint32_t pos;
 	uint8_t val;
@@ -622,8 +625,8 @@ static PyMethodDef i8080o_methods[] = {
     {"set_reg",                (PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set register")},
     {"disassemble",            (PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("get register A")},
     {"load_rom",               (PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("load rom")},
-    {"read_rom",               (PyCFunction)i8080o_read_rom,                            METH_VARARGS,                   PyDoc_STR("read rom")},
-    {"set_rom",                (PyCFunction)i8080o_set_rom,                             METH_VARARGS,                   PyDoc_STR("set rom")},
+    {"read_memory",               (PyCFunction)i8080o_read_memory,                            METH_VARARGS,                   PyDoc_STR("read rom")},
+    {"set_memory",                (PyCFunction)i8080o_set_memory,                             METH_VARARGS,                   PyDoc_STR("set rom")},
 	{"run_instruction",        (PyCFunction)i8080o_run_instruction,                     METH_NOARGS,                    PyDoc_STR("run instruction")},
 	{NULL,              NULL}           /* sentinel */
 };
