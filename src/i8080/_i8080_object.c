@@ -18,10 +18,8 @@ i8080 Object methods
 reset
 ---------- */
 
-static PyObject *
-i8080o_reset(i8080oObject *self, PyObject *args)
-{
-	// Set the default values
+void reset(i8080oObject *self){
+		// Set the default values
     self->A = 0;
     self->B = 0;
     self->C = 0;
@@ -35,7 +33,13 @@ i8080o_reset(i8080oObject *self, PyObject *args)
 	if (self->memory != NULL){
 		memset(self->memory, 0, MEMORY_SIZE);
 	}
+}
 
+static PyObject *
+i8080o_reset(i8080oObject *self, PyObject *args)
+{
+
+	reset(self);
 	Py_RETURN_NONE;
 }
 
@@ -701,17 +705,9 @@ newi8080oObject(PyObject *arg)
     self->x_attr = NULL;
 
     // Set the default values
-    self->A = 0;
-    self->B = 0;
-    self->C = 0;
-    self->D = 0;
-    self->E = 0;
-    self->H = 0;
-    self->L = 0;
-    self->PC = 0;
-    self->SP = 0;
-    memset(&self->CC, 0, sizeof(ConditionCodes));
     self->memory = malloc(MEMORY_SIZE);
+
+	reset(self);
 
     if (self->memory == NULL){
         PyErr_SetString(PyExc_MemoryError, "Could not allocate memory\n");

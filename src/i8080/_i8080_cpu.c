@@ -3,11 +3,11 @@
 #include "_i8080_object.h"
 #include "stdio.h"
 
-// #define DEBUG
+#define DEBUG
 
 
 // checks the parity of a byte
-uint8_t parity_check(uint8_t byte)
+static inline uint8_t parity_check(uint8_t byte)
 {
     byte ^= byte >> 4;
     byte ^= byte >> 2;
@@ -60,7 +60,7 @@ Parity Flag: Set if result has even parity; reset otherwise.
 Auxiliary Carry Flag: Set if carry from bit 3; reset otherwise.
 */
 
-void update_flags_inr(i8080oObject *self, uint8_t res) {
+static inline void update_flags_inr(i8080oObject *self, uint8_t res) {
     self->CC.z = (res == 0); // set zero flag
     self->CC.s = res >> 7; // set sign flag
     self->CC.p = parity_check(res); // set parity flag
@@ -154,7 +154,7 @@ Parity Flag: Set if result has even parity; reset otherwise.
 Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
 */
 
-void update_flags_dcr(i8080oObject *self, uint8_t res) {
+static inline void update_flags_dcr(i8080oObject *self, uint8_t res) {
     self->CC.z = (res == 0); // set zero flag
     self->CC.s = res >> 7; // set sign flag
     self->CC.p = parity_check(res); // set parity flag
@@ -860,7 +860,7 @@ Parity Flag: Set if result has even parity; reset otherwise.
 Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
 */
 
-void update_flags_add(i8080oObject *self, uint16_t result){
+static inline void update_flags_add(i8080oObject *self, uint16_t result){
     self->CC.cy = (result > 0xff);
     self->CC.z = (result == 0);
     self->CC.s = (result & 0x80) >> 7;
@@ -1056,7 +1056,7 @@ Parity Flag: Set if result has even parity; reset otherwise.
 Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
 */
 
-void update_flags_sub(i8080oObject *self, uint16_t result){
+static inline void update_flags_sub(i8080oObject *self, uint16_t result){
     self->CC.cy = !(result > 0xff); // reset carry if result is greater than 0xff
     self->CC.z = ((result & 0xff) == 0);
     self->CC.s = ((result & 0x80) != 0);
@@ -1253,7 +1253,7 @@ Sign Flag: Set if bit 7 of result is set; reset otherwise.
 Parity Flag: Set if result has even parity; reset otherwise.
 */
 
-void update_flags_ana(i8080oObject *self) {
+static inline void update_flags_ana(i8080oObject *self) {
     self->CC.z = (self->A) == 0;
     self->CC.s = (self->A & 0x80) != 0;
     self->CC.p = parity_check(self->A);
@@ -1347,7 +1347,7 @@ Parity Flag: Set if result has even parity; reset otherwise.
 Auxiliary Carry Flag: Reset. (Undocumented, not sure)
 */
 
-void update_flags_xra(i8080oObject *self) {
+static inline void update_flags_xra(i8080oObject *self) {
     self->CC.z = (self->A) == 0;
     self->CC.s = (self->A & 0x80) != 0;
     self->CC.p = parity_check(self->A);
@@ -1440,7 +1440,7 @@ Sign Flag: Set if bit 7 of result is set; reset otherwise.
 Parity Flag: Set if result has even parity; reset otherwise.
 */
 
-void update_flags_ora(i8080oObject *self) {
+static inline void update_flags_ora(i8080oObject *self) {
     self->CC.z = (self->A) == 0;
     self->CC.s = (self->A & 0x80) != 0;
     self->CC.p = parity_check(self->A);
@@ -1533,7 +1533,7 @@ Parity Flag: Set if accumulator has even parity; reset otherwise.
 Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise. (Undocumented, not sure)
 */
 
-void update_flags_cmp(i8080oObject *self, uint8_t reg) {
+static inline void update_flags_cmp(i8080oObject *self, uint8_t reg) {
     self->CC.z = (self->A) == reg;
     self->CC.cy = (self->A) < reg;
     self->CC.s = (self->A & 0x80) != 0;
@@ -2603,7 +2603,7 @@ void instr_0xcd(i8080oObject *self) {
     #ifdef DEBUG
     printf("CALL\n");
     #endif
-    call(self, self->PC+2);
+    call(self, self->PC+3);
 }
 
 /*
