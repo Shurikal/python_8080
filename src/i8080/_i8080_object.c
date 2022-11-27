@@ -22,14 +22,14 @@ static PyObject *
 i8080o_run_instruction(i8080oObject *self, PyObject *args)
 {
 	#ifdef DEBUG
-	printf("%04x - ", self->PC);
+	//sprintf("%04x - ", self->PC);
 	#endif
 
 	uint8_t op_code = self->memory[self->PC];
 
 	CPU_FUNCTIONS[op_code](self);
 	
-	Py_RETURN_NONE;	
+	return Py_BuildValue("i", self->PC);
 }
 
 /* ----------

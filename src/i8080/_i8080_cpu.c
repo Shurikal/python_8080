@@ -15,13 +15,6 @@ uint8_t parity_check(uint8_t byte)
     return (~byte) & 1;
 }
 
-void update_flags_inr_dcr(i8080oObject *self, uint8_t res) {
-    self->CC.z = (res == 0);
-    self->CC.s = (0x80 == (res & 0x80));
-    self->CC.p = parity_check(res);
-    self->CC.cy =(0x8 == (res & 0x8));
-}
-
 /*
 Carry Bit Instructions
 */
@@ -44,7 +37,6 @@ STC Set Carry
 */
 
 void instr_0x37(i8080oObject *self) {
-    // not verified
     #ifdef DEBUG
     printf("STC\n");
     #endif
@@ -57,6 +49,7 @@ Single Register Instructions
 */
 
 
+
 /*
 INR Increment Register or Memory
 
@@ -67,12 +60,20 @@ Parity Flag: Set if result has even parity; reset otherwise.
 Auxiliary Carry Flag: Set if carry from bit 3; reset otherwise.
 */
 
+void update_flags_inr(i8080oObject *self, uint8_t res) {
+    self->CC.z = (res == 0); // set zero flag
+    self->CC.s = res >> 7; // set sign flag
+    self->CC.p = parity_check(res); // set parity flag
+    self->CC.ac = (res & 0x0F) == 0; // set auxiliary carry flag
+}
+
+
 void instr_0x04(i8080oObject *self) {
     #ifdef DEBUG
     printf("INR B\n");
     #endif
     self->B++;
-    update_flags_inr_dcr(self, self->B);
+    update_flags_inr(self, self->B);
     self->PC++;
 }
 
@@ -81,7 +82,7 @@ void instr_0x0c(i8080oObject *self) {
     printf("INR C\n");
     #endif
     self->C++;
-    update_flags_inr_dcr(self, self->C);
+    update_flags_inr(self, self->C);
     self->PC++;
 }
 
@@ -90,7 +91,7 @@ void instr_0x14(i8080oObject *self) {
     printf("INR D\n");
     #endif
     self->D++;
-    update_flags_inr_dcr(self, self->D);
+    update_flags_inr(self, self->D);
     self->PC++;
 }
 
@@ -99,7 +100,7 @@ void instr_0x1c(i8080oObject *self) {
     printf("INR E\n");
     #endif
     self->E++;
-    update_flags_inr_dcr(self, self->E);
+    update_flags_inr(self, self->E);
     self->PC++;
 }
 
@@ -108,7 +109,7 @@ void instr_0x24(i8080oObject *self) {
     printf("INR H\n");
     #endif
     self->H++;
-    update_flags_inr_dcr(self, self->H);
+    update_flags_inr(self, self->H);
     self->PC++;
 }
 
@@ -117,7 +118,7 @@ void instr_0x2c(i8080oObject *self) {
     printf("INR L\n");
     #endif
     self->L++;
-    update_flags_inr_dcr(self, self->L);
+    update_flags_inr(self, self->L);
     self->PC++;
 }
 
@@ -128,7 +129,7 @@ void instr_0x34(i8080oObject *self) {
     uint16_t addr = (self->H << 8) | self->L;
     uint8_t res = self->memory[addr] + 1;
     self->memory[addr] = res;
-    update_flags_inr_dcr(self, res);
+    update_flags_inr(self, res);
     self->PC++;
 }
 
@@ -137,7 +138,7 @@ void instr_0x3c(i8080oObject *self) {
     printf("INR A\n");
     #endif
     self->A++;
-    update_flags_inr_dcr(self, self->A);
+    update_flags_inr(self, self->A);
     self->PC++;
 }
 
@@ -153,12 +154,19 @@ Parity Flag: Set if result has even parity; reset otherwise.
 Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
 */
 
+void update_flags_dcr(i8080oObject *self, uint8_t res) {
+    self->CC.z = (res == 0); // set zero flag
+    self->CC.s = res >> 7; // set sign flag
+    self->CC.p = parity_check(res); // set parity flag
+    self->CC.ac = !((res & 0x0F) == 0x0F); // set auxiliary carry flag
+}
+
 void instr_0x05(i8080oObject *self) {
     #ifdef DEBUG
     printf("DCR B\n");
     #endif
     self->B--;
-    update_flags_inr_dcr(self, self->B);
+    update_flags_dcr(self, self->B);
     self->PC++;
 }
 
@@ -167,7 +175,7 @@ void instr_0x0d(i8080oObject *self) {
     printf("DCR C\n");
     #endif
     self->C--;
-    update_flags_inr_dcr(self, self->C);
+    update_flags_dcr(self, self->C);
     self->PC++;
 }
 
@@ -176,7 +184,7 @@ void instr_0x15(i8080oObject *self) {
     printf("DCR D\n");
     #endif
     self->D--;
-    update_flags_inr_dcr(self, self->D);
+    update_flags_dcr(self, self->D);
     self->PC++;
 }
 
@@ -185,7 +193,7 @@ void instr_0x1d(i8080oObject *self) {
     printf("DCR E\n");
     #endif
     self->E--;
-    update_flags_inr_dcr(self, self->E);
+    update_flags_dcr(self, self->E);
     self->PC++;
 }
 
@@ -194,7 +202,7 @@ void instr_0x25(i8080oObject *self) {
     printf("DCR H\n");
     #endif
     self->H--;
-    update_flags_inr_dcr(self, self->H);
+    update_flags_dcr(self, self->H);
     self->PC++;
 }
 
@@ -203,7 +211,7 @@ void instr_0x2d(i8080oObject *self) {
     printf("DCR L\n");
     #endif
     self->L--;
-    update_flags_inr_dcr(self, self->H);
+    update_flags_dcr(self, self->H);
     self->PC++;
 }
 
@@ -214,7 +222,7 @@ void instr_0x35(i8080oObject *self) {
     uint16_t addr = (self->H << 8) | self->L;
     uint8_t res = self->memory[addr] - 1;
     self->memory[addr] = res;
-    update_flags_inr_dcr(self, res);
+    update_flags_dcr(self, res);
     self->PC++;
 }
 
@@ -223,7 +231,7 @@ void instr_0x3d(i8080oObject *self) {
     printf("DCR A\n");
     #endif
     self->A--;
-    update_flags_inr_dcr(self, self->A);
+    update_flags_dcr(self, self->A);
     self->PC++;
 }
 
