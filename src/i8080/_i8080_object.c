@@ -15,6 +15,31 @@ i8080 Object methods
 ----------  */
 
 /* ----------
+reset
+---------- */
+
+static PyObject *
+i8080o_reset(i8080oObject *self, PyObject *args)
+{
+	// Set the default values
+    self->A = 0;
+    self->B = 0;
+    self->C = 0;
+    self->D = 0;
+    self->E = 0;
+    self->H = 0;
+    self->L = 0;
+    self->PC = 0;
+    self->SP = 0;
+    memset(&self->CC, 0, sizeof(ConditionCodes));
+	if (self->memory != NULL){
+		memset(self->memory, 0, MEMORY_SIZE);
+	}
+
+	Py_RETURN_NONE;
+}
+
+/* ----------
 run_instruction
 ---------- */
 
@@ -338,6 +363,85 @@ i8080o_disassemble(i8080oObject *self, PyObject *args){
     return ret;
 }
 
+/* ----------
+get flag
+---------- */
+static PyObject *
+i8080o_get_flag(i8080oObject *self, PyObject *args)
+{
+// return the value of the register
+    char *reg;
+    if (!PyArg_ParseTuple(args, "s", &reg)){
+        PyErr_SetString(PyExc_Exception, "Parse error\n");
+        return NULL;
+    }
+
+    if (strcmp(reg, "z") == 0)
+        return Py_BuildValue("i", self->CC.z);
+	else if (strcmp(reg, "s") == 0)
+		return Py_BuildValue("i", self->CC.s);
+	else if (strcmp(reg, "p") == 0)
+		return Py_BuildValue("i", self->CC.p);
+	else if (strcmp(reg, "cy") == 0)
+		return Py_BuildValue("i", self->CC.cy);
+	else if (strcmp(reg, "ac") == 0)
+		return Py_BuildValue("i", self->CC.ac);
+	else if (strcmp(reg, "halt") == 0)
+		return Py_BuildValue("i", self->CC.halt);
+	else if (strcmp(reg, "int_enable") == 0)
+		return Py_BuildValue("i", self->CC.int_enable);
+    else {
+        // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
+        PyErr_SetString(PyExc_LookupError, "Invalid flag\n");
+        return NULL;
+    }
+}
+
+/* ----------
+set flag
+---------- */
+static PyObject *
+i8080o_set_flag(i8080oObject *self, PyObject *args, PyObject *keywds)
+{
+    char *reg;
+    uint16_t val;
+
+    static char *kwlist[] = {"register", "value", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, keywds, "sH", kwlist, &reg, &val)){
+        PyErr_SetString(PyExc_Exception, "Parse error\n");
+        return NULL;
+    }
+
+	if (val > 1){
+		PyErr_SetString(PyExc_Exception, "Value must be 0 or 1\n");
+		return NULL;
+	}
+
+    if (strcmp(reg, "z") == 0)
+		self->CC.z = val;
+	else if (strcmp(reg, "s") == 0)
+		self->CC.s = val;
+	else if (strcmp(reg, "p") == 0)
+		self->CC.p = val;
+	else if (strcmp(reg, "cy") == 0)
+		self->CC.cy = val;
+	else if (strcmp(reg, "ac") == 0)
+		self->CC.ac = val;
+	else if (strcmp(reg, "halt") == 0)
+		self->CC.halt = val;
+	else if (strcmp(reg, "int_enable") == 0)
+		self->CC.int_enable = val;
+	else {
+		// https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
+		PyErr_SetString(PyExc_LookupError, "Invalid flag\n");
+		return NULL;
+	}
+
+	Py_RETURN_NONE;
+	
+}
+
 
 /* ----------
 get register
@@ -372,6 +476,12 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
         return Py_BuildValue("i", self->SP);
     else if (strcmp(reg, "cc") == 0)
         return Py_BuildValue("i", self->CC);
+	else if (strcmp(reg, "m") == 0){
+		// get the memory value at the address in HL
+		uint16_t addr = (self->H << 8) | self->L;
+		return Py_BuildValue("i", self->memory[addr]);
+	}
+
     else {
         // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
         PyErr_SetString(PyExc_LookupError, "Invalid register\n");
@@ -468,6 +578,15 @@ i8080o_set_reg(i8080oObject *self, PyObject *args, PyObject *keywds)
         memcpy(&self->CC, &val, sizeof(ConditionCodes));
         return Py_BuildValue("i", self->CC);
     }
+	else if (strcmp(reg, "m") == 0){
+		// get the memory value at the address in HL
+		if (val > 0xFF){
+            goto overflow;
+        }
+		uint16_t addr = (self->H << 8) | self->L;
+		self->memory[addr] = val;
+		return Py_BuildValue("i", self->memory[addr]);
+	}
     else {
         // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
         PyErr_SetString(PyExc_LookupError, "Invalid register\n");
@@ -621,13 +740,16 @@ i8080o_dealloc(i8080oObject *self)
 
 
 static PyMethodDef i8080o_methods[] = {
-	{"get_reg",                (PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
-    {"set_reg",                (PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set register")},
-    {"disassemble",            (PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("get register A")},
-    {"load_rom",               (PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("load rom")},
-    {"read_memory",               (PyCFunction)i8080o_read_memory,                            METH_VARARGS,                   PyDoc_STR("read rom")},
-    {"set_memory",                (PyCFunction)i8080o_set_memory,                             METH_VARARGS,                   PyDoc_STR("set rom")},
-	{"run_instruction",        (PyCFunction)i8080o_run_instruction,                     METH_NOARGS,                    PyDoc_STR("run instruction")},
+	{"reset",                  		(PyCFunction)i8080o_reset,                               METH_NOARGS, 					 PyDoc_STR("Reset the i8080")},
+	{"get_reg",                		(PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
+    {"set_reg",                		(PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set register")},
+    {"get_flag", 					(PyCFunction)i8080o_get_flag,                            METH_VARARGS,                   PyDoc_STR("get flag")},
+	{"set_flag", 					(PyCFunction)(void(*)(void))i8080o_set_flag,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set flag")},
+	{"disassemble",             	(PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("get register A")},
+    {"load_rom",               		(PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("load rom")},
+    {"read_memory",               	(PyCFunction)i8080o_read_memory,                         METH_VARARGS,                   PyDoc_STR("read rom")},
+    {"set_memory",                	(PyCFunction)i8080o_set_memory,                          METH_VARARGS,                   PyDoc_STR("set rom")},
+	{"run_instruction",        		(PyCFunction)i8080o_run_instruction,                     METH_NOARGS,                    PyDoc_STR("run instruction")},
 	{NULL,              NULL}           /* sentinel */
 };
 

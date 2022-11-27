@@ -3,7 +3,7 @@
 #include "_i8080_object.h"
 #include "stdio.h"
 
-#define DEBUG
+// #define DEBUG
 
 
 // checks the parity of a byte
