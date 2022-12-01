@@ -3,9 +3,7 @@
 #include "_i8080_object.h"
 #include "_i8080_constants.h"
 #include "_i8080_cpu.h"
-#include "structmember.h"
-#include <stddef.h>
-#include <stdio.h>
+//#include "structmember.h"
 
 extern const uint8_t opcodes_cycles[256];
 extern const char *opcodes_names[256];
@@ -451,173 +449,6 @@ i8080o_set_flag(i8080oObject *self, PyObject *args, PyObject *keywds)
 
 
 /* ----------
-get register
-----------  */
-static PyObject *
-i8080o_get_reg(i8080oObject *self, PyObject *args)
-{
-    // return the value of the register
-    char *reg;
-    if (!PyArg_ParseTuple(args, "s", &reg)){
-        PyErr_SetString(PyExc_Exception, "Parse error\n");
-        return NULL;
-    }
-
-    if (strcmp(reg, "a") == 0)
-        return Py_BuildValue("i", self->A);
-    else if (strcmp(reg, "b") == 0)
-        return Py_BuildValue("i", self->B);
-    else if (strcmp(reg, "c") == 0)
-        return Py_BuildValue("i", self->C);
-    else if (strcmp(reg, "d") == 0)
-        return Py_BuildValue("i", self->D);
-    else if (strcmp(reg, "e") == 0)
-        return Py_BuildValue("i", self->E);
-    else if (strcmp(reg, "h") == 0)
-        return Py_BuildValue("i", self->H);
-    else if (strcmp(reg, "l") == 0)
-        return Py_BuildValue("i", self->L);
-    else if (strcmp(reg, "pc") == 0)
-        return Py_BuildValue("i", self->PC);
-    else if (strcmp(reg, "sp") == 0)
-        return Py_BuildValue("i", self->SP);
-    else if (strcmp(reg, "cc") == 0)
-        return Py_BuildValue("i", self->CC);
-	else if (strcmp(reg, "m") == 0){
-		// get the memory value at the address in HL
-		uint16_t addr = (self->H << 8) | self->L;
-		return Py_BuildValue("i", self->memory[addr]);
-	}
-	else if (strcmp(reg, "bc") == 0){
-		// return composed value
-		return Py_BuildValue("i", (self->B << 8) | self->C);
-	}
-	else if (strcmp(reg, "de") == 0){
-		// return composed value
-		return Py_BuildValue("i", (self->D << 8) | self->E);
-	}
-	else if (strcmp(reg, "hl") == 0){
-		// return composed value
-		return Py_BuildValue("i", (self->H << 8) | self->L);
-	}
-	else {
-        // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
-        PyErr_SetString(PyExc_LookupError, "Invalid register\n");
-        return NULL;
-    }
-
-}
-
-/* ----------
-set register
-----------  */
-static PyObject *
-i8080o_set_reg(i8080oObject *self, PyObject *args, PyObject *keywds)
-{
-    // return the value of the register
-    char *reg;
-    uint16_t val;
-
-    static char *kwlist[] = {"register", "value", NULL};
-
-    if (!PyArg_ParseTupleAndKeywords(args, keywds, "sH", kwlist, &reg, &val)){
-        PyErr_SetString(PyExc_Exception, "Parse error\n");
-        return NULL;
-    }
-
-    
-    #ifdef DEBUG
-	// print the value
-    // printf("Setting register %s to %d\n	", reg, val);
-    #endif
-
-    if (strcmp(reg, "a") == 0){
-        // check for overflow
-        if (val > 0xFF){
-            goto overflow;
-        }
-        self->A = val;
-        return Py_BuildValue("i", self->A);
-    }
-    else if (strcmp(reg, "b") == 0){
-        if (val > 0xFF){
-            goto overflow;
-        }
-        self->B = val;
-        return Py_BuildValue("i", self->B);
-    }
-    else if (strcmp(reg, "c") == 0){
-        if (val > 0xFF){
-            goto overflow;
-        }
-        self->C = val;
-        return Py_BuildValue("i", self->C);
-    }
-    else if (strcmp(reg, "d") == 0){
-        if (val > 0xFF){
-            goto overflow;
-        }
-        self->D = val;
-        return Py_BuildValue("i", self->D);
-    }
-    else if (strcmp(reg, "e") == 0){
-        if (val > 0xFF){
-            goto overflow;
-        }
-        self->E = val;
-        return Py_BuildValue("i", self->E);
-    }
-    else if (strcmp(reg, "h") == 0){
-        if (val > 0xFF){
-            goto overflow;
-        }
-        self->H = val;
-        return Py_BuildValue("i", self->H);
-    }
-    else if (strcmp(reg, "l") == 0){
-        if (val > 0xFF){
-            goto overflow;
-        }
-        self->L = val;
-        return Py_BuildValue("i", self->L);
-    }
-    else if (strcmp(reg, "pc") == 0){
-        self->PC = val;
-        return Py_BuildValue("i", self->PC);
-    }
-    else if (strcmp(reg, "sp") == 0){
-        self->SP = val;
-        return Py_BuildValue("i", self->SP);
-    }
-    else if (strcmp(reg, "cc") == 0){
-        if (val > 0xFF){
-            goto overflow;
-        }
-        memcpy(&self->CC, &val, sizeof(ConditionCodes));
-        return Py_BuildValue("i", self->CC);
-    }
-	else if (strcmp(reg, "m") == 0){
-		// get the memory value at the address in HL
-		if (val > 0xFF){
-            goto overflow;
-        }
-		uint16_t addr = (self->H << 8) | self->L;
-		self->memory[addr] = val;
-		return Py_BuildValue("i", self->memory[addr]);
-	}
-    else {
-        // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
-        PyErr_SetString(PyExc_LookupError, "Invalid register\n");
-        return NULL;
-    }
-
-overflow:
-        PyErr_SetString(PyExc_OverflowError, "Value too large\n");
-        return NULL;
-}
-
-
-/* ----------
 load rom
 ----------  */
 static PyObject *
@@ -751,9 +582,7 @@ i8080o_dealloc(i8080oObject *self)
 
 static PyMethodDef i8080o_methods[] = {
 	{"reset",                  		(PyCFunction)i8080o_reset,                               METH_NOARGS, 					 PyDoc_STR("Reset the i8080")},
-	{"get_reg",                		(PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register")},
-    {"set_reg",                		(PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set register")},
-    {"get_flag", 					(PyCFunction)i8080o_get_flag,                            METH_VARARGS,                   PyDoc_STR("get flag")},
+	{"get_flag", 					(PyCFunction)i8080o_get_flag,                            METH_VARARGS,                   PyDoc_STR("get flag")},
 	{"set_flag", 					(PyCFunction)(void(*)(void))i8080o_set_flag,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set flag")},
 	{"disassemble",             	(PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("disassemble instruction at current PC")},
     {"load_rom",               		(PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("load rom")},
@@ -764,13 +593,234 @@ static PyMethodDef i8080o_methods[] = {
 };
 
 
-// PyMemberDef
 // Access to members of the i8080 object
 
+static PyObject*
+i8080o_get_a(i8080oObject* self, void* closure)
+{
+    return Py_BuildValue("i", self->A);
+}
 
-static PyMemberDef i8080o_members[] = {
-	{"pc", T_USHORT, offsetof(i8080oObject, PC), 0},
-	{NULL}  /* Sentinel */
+static PyObject*
+i8080o_get_b(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->B);
+}
+
+static PyObject*
+i8080o_get_c(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->C);
+}
+
+static PyObject*
+i8080o_get_d(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->D);
+}
+
+static PyObject*
+i8080o_get_e(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->E);
+}
+
+
+static PyObject*
+i8080o_get_h(i8080oObject* self, void* closure)
+{
+    return Py_BuildValue("i", self->H);
+}
+
+static PyObject*
+i8080o_get_l(i8080oObject* self, void* closure)
+{
+    return Py_BuildValue("i", self->L);
+}
+
+static PyObject*
+i8080o_get_sp(i8080oObject* self, void* closure)
+{
+    return Py_BuildValue("i", self->SP);
+}
+
+static PyObject*
+i8080o_get_pc(i8080oObject* self, void* closure)
+{
+    return Py_BuildValue("i", self->PC);
+}
+
+static PyObject*
+i8080o_get_m(i8080oObject* self, void* closure)
+{
+	uint16_t address = (self->H << 8) | self->L;
+	return Py_BuildValue("i", self->memory[address]);
+}
+
+#define parse_uint8_t(register) \
+	uint64_t val = PyLong_AsUnsignedLong(value);\
+    if (PyErr_Occurred()) {\
+        return -1;\
+    }\
+	if (val > 0xFF){\
+		PyErr_SetString(PyExc_ValueError, "Value out of range");\
+		return -1;\
+	}\
+	self->register = val;\
+    return 0;\
+
+#define parse_uint16_t(register) \
+	uint64_t val = PyLong_AsUnsignedLong(value);\
+    if (PyErr_Occurred()) {\
+        return -1;\
+    }\
+	if (val > 0xFFFF){\
+		PyErr_SetString(PyExc_ValueError, "Value out of range");\
+		return -1;\
+	}\
+	self->register = val;\
+    return 0;\
+
+static int
+i8080o_set_a(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint8_t(A)
+}
+
+static int
+i8080o_set_b(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint8_t(B)
+}
+
+static int
+i8080o_set_c(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint8_t(C)
+}
+
+static int
+i8080o_set_d(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint8_t(D)
+}
+
+static int
+i8080o_set_e(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint8_t(E)
+}
+
+static int
+i8080o_set_h(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint8_t(H)
+}
+
+static int
+i8080o_set_l(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint8_t(L)
+}
+
+static int
+i8080o_set_sp(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint16_t(SP)
+}
+
+static int
+i8080o_set_pc(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_uint16_t(PC)
+}
+
+static int
+i8080o_set_m(i8080oObject* self, PyObject* value, void* closure)
+{
+	uint64_t val = PyLong_AsUnsignedLong(value);
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+	if (val > 0xFF){
+		PyErr_SetString(PyExc_ValueError, "Value out of range");
+		return -1;
+	}
+	uint16_t address = (self->H << 8) | self->L;
+	self->memory[address] = val;
+	return 0;
+}
+
+PyGetSetDef getsets[] = {
+	{"a", (getter) i8080o_get_a, (setter) i8080o_set_a, "set a register", NULL},
+	{"b", (getter) i8080o_get_b, (setter) i8080o_set_b, "set b register", NULL},
+	{"c", (getter) i8080o_get_c, (setter) i8080o_set_c, "set c register", NULL},
+	{"d", (getter) i8080o_get_d, (setter) i8080o_set_d, "set d register", NULL},
+	{"e", (getter) i8080o_get_e, (setter) i8080o_set_e, "set e register", NULL},
+	{"h", (getter) i8080o_get_h, (setter) i8080o_set_h, "set h register", NULL},
+	{"l", (getter) i8080o_get_l, (setter) i8080o_set_l, "set l register", NULL},
+	{"sp", (getter) i8080o_get_sp, (setter) i8080o_set_sp, "set sp register", NULL},
+	{"pc", (getter) i8080o_get_pc, (setter) i8080o_set_pc, "set pc register", NULL},
+	{"m", (getter) i8080o_get_m, (setter) i8080o_set_m, "set m", NULL},
+    {NULL}
+};
+
+static Py_ssize_t i8080o_len(i8080oObject* self) {
+	return (Py_ssize_t) MEMORY_SIZE;
+}
+
+static PyObject* i8080o_sq_item(i8080oObject* self, Py_ssize_t index) {
+	if (index >= MEMORY_SIZE) {
+		PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
+		return NULL;
+	}
+	if (index < 0 && index >= -MEMORY_SIZE) {
+		index += MEMORY_SIZE;
+	}
+
+	return Py_BuildValue("i", self->memory[index]);
+}
+
+
+static int i8080o_sq_setitem(i8080oObject* self, Py_ssize_t index, PyObject* value) {
+	if (index >= MEMORY_SIZE) {
+		PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
+		return NULL;
+	}
+	if (index < 0 && index >= -MEMORY_SIZE) {
+		index += MEMORY_SIZE;
+	}
+
+	uint64_t val = PyLong_AsUnsignedLong(value);
+    if (PyErr_Occurred()) {
+        return -1;
+    }
+	if (val > 0xFF){
+		PyErr_SetString(PyExc_ValueError, "Value out of range");
+		return -1;
+	}
+
+	self->memory[index] = val;
+	return 0;
+}
+
+
+static PySequenceMethods example_classSeqMethods = {
+	/* PySequenceMethods, implementing the sequence protocol
+	 * references:
+	 * https://docs.python.org/3/c-api/typeobj.html#c.PySequenceMethods
+	 * https://docs.python.org/3/c-api/sequence.html
+	 */
+	(lenfunc)i8080o_len, // sq_length
+	0, // sq_concat
+	0, // sq_repeat
+	(ssizeargfunc)i8080o_sq_item, // sq_item
+	0,
+	(ssizeobjargproc)i8080o_sq_setitem, // sq_ass_item
+	0,
+	0, // sq_contains
+	0, // sq_inplace_concat
+	0, // sq_inplace_repeat
 };
 
 // i8080oObject basic methods
@@ -786,5 +836,7 @@ PyTypeObject i8080o_Type = {
     //.tp_getattro = (getattrofunc)AVRo_getattro,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = i8080o_methods,
-	.tp_members = i8080o_members,
+	.tp_getset = getsets,
+	.tp_as_sequence = &example_classSeqMethods,
+//	.tp_members = i8080o_members,
 };
