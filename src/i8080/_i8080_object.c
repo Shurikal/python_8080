@@ -3,6 +3,9 @@
 #include "_i8080_object.h"
 #include "_i8080_constants.h"
 #include "_i8080_cpu.h"
+#include "structmember.h"
+#include <stddef.h>
+#include <stdio.h>
 
 extern const uint8_t opcodes_cycles[256];
 extern const char *opcodes_names[256];
@@ -485,8 +488,19 @@ i8080o_get_reg(i8080oObject *self, PyObject *args)
 		uint16_t addr = (self->H << 8) | self->L;
 		return Py_BuildValue("i", self->memory[addr]);
 	}
-
-    else {
+	else if (strcmp(reg, "bc") == 0){
+		// return composed value
+		return Py_BuildValue("i", (self->B << 8) | self->C);
+	}
+	else if (strcmp(reg, "de") == 0){
+		// return composed value
+		return Py_BuildValue("i", (self->D << 8) | self->E);
+	}
+	else if (strcmp(reg, "hl") == 0){
+		// return composed value
+		return Py_BuildValue("i", (self->H << 8) | self->L);
+	}
+	else {
         // https://docs.python.org/3/c-api/exceptions.html#standard-exceptions
         PyErr_SetString(PyExc_LookupError, "Invalid register\n");
         return NULL;
@@ -737,16 +751,26 @@ i8080o_dealloc(i8080oObject *self)
 
 static PyMethodDef i8080o_methods[] = {
 	{"reset",                  		(PyCFunction)i8080o_reset,                               METH_NOARGS, 					 PyDoc_STR("Reset the i8080")},
-	{"get_reg",                		(PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register A")},
+	{"get_reg",                		(PyCFunction)i8080o_get_reg,                             METH_VARARGS,                   PyDoc_STR("get register")},
     {"set_reg",                		(PyCFunction)(void(*)(void))i8080o_set_reg,              METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set register")},
     {"get_flag", 					(PyCFunction)i8080o_get_flag,                            METH_VARARGS,                   PyDoc_STR("get flag")},
 	{"set_flag", 					(PyCFunction)(void(*)(void))i8080o_set_flag,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set flag")},
-	{"disassemble",             	(PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("get register A")},
+	{"disassemble",             	(PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("disassemble instruction at current PC")},
     {"load_rom",               		(PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("load rom")},
-    {"read_memory",               	(PyCFunction)i8080o_read_memory,                         METH_VARARGS,                   PyDoc_STR("read rom")},
-    {"set_memory",                	(PyCFunction)i8080o_set_memory,                          METH_VARARGS,                   PyDoc_STR("set rom")},
+    {"read_memory",               	(PyCFunction)i8080o_read_memory,                         METH_VARARGS,                   PyDoc_STR("read memory at address")},
+    {"set_memory",                	(PyCFunction)i8080o_set_memory,                          METH_VARARGS,                   PyDoc_STR("set memory at address")},
 	{"run_instruction",        		(PyCFunction)i8080o_run_instruction,                     METH_NOARGS,                    PyDoc_STR("run instruction")},
 	{NULL,              NULL}           /* sentinel */
+};
+
+
+// PyMemberDef
+// Access to members of the i8080 object
+
+
+static PyMemberDef i8080o_members[] = {
+	{"pc", T_USHORT, offsetof(i8080oObject, PC), 0},
+	{NULL}  /* Sentinel */
 };
 
 // i8080oObject basic methods
@@ -762,4 +786,5 @@ PyTypeObject i8080o_Type = {
     //.tp_getattro = (getattrofunc)AVRo_getattro,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = i8080o_methods,
+	.tp_members = i8080o_members,
 };

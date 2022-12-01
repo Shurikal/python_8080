@@ -1,9 +1,9 @@
 #include "Python.h"
+#include "_i8080_module.h"
 #include "_i8080_cpu.h"
 #include "_i8080_object.h"
 #include "stdio.h"
 
-#define DEBUG
 
 
 // checks the parity of a byte
@@ -25,7 +25,7 @@ Flags affected: CY
 */
 
 void instr_0x3f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMC\n");
     #endif
     self->CC.cy = !self->CC.cy;
@@ -37,7 +37,7 @@ STC Set Carry
 */
 
 void instr_0x37(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("STC\n");
     #endif
     self->CC.cy = 1;
@@ -69,7 +69,7 @@ static inline void update_flags_inr(i8080oObject *self, uint8_t res) {
 
 
 void instr_0x04(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INR B\n");
     #endif
     self->B++;
@@ -78,7 +78,7 @@ void instr_0x04(i8080oObject *self) {
 }
 
 void instr_0x0c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INR C\n");
     #endif
     self->C++;
@@ -87,7 +87,7 @@ void instr_0x0c(i8080oObject *self) {
 }
 
 void instr_0x14(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INR D\n");
     #endif
     self->D++;
@@ -96,7 +96,7 @@ void instr_0x14(i8080oObject *self) {
 }
 
 void instr_0x1c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INR E\n");
     #endif
     self->E++;
@@ -105,7 +105,7 @@ void instr_0x1c(i8080oObject *self) {
 }
 
 void instr_0x24(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INR H\n");
     #endif
     self->H++;
@@ -114,7 +114,7 @@ void instr_0x24(i8080oObject *self) {
 }
 
 void instr_0x2c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INR L\n");
     #endif
     self->L++;
@@ -123,7 +123,7 @@ void instr_0x2c(i8080oObject *self) {
 }
 
 void instr_0x34(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INR M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -134,7 +134,7 @@ void instr_0x34(i8080oObject *self) {
 }
 
 void instr_0x3c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INR A\n");
     #endif
     self->A++;
@@ -162,7 +162,7 @@ static inline void update_flags_dcr(i8080oObject *self, uint8_t res) {
 }
 
 void instr_0x05(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCR B\n");
     #endif
     self->B--;
@@ -171,7 +171,7 @@ void instr_0x05(i8080oObject *self) {
 }
 
 void instr_0x0d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCR C\n");
     #endif
     self->C--;
@@ -180,7 +180,7 @@ void instr_0x0d(i8080oObject *self) {
 }
 
 void instr_0x15(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCR D\n");
     #endif
     self->D--;
@@ -189,7 +189,7 @@ void instr_0x15(i8080oObject *self) {
 }
 
 void instr_0x1d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCR E\n");
     #endif
     self->E--;
@@ -198,7 +198,7 @@ void instr_0x1d(i8080oObject *self) {
 }
 
 void instr_0x25(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCR H\n");
     #endif
     self->H--;
@@ -207,7 +207,7 @@ void instr_0x25(i8080oObject *self) {
 }
 
 void instr_0x2d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCR L\n");
     #endif
     self->L--;
@@ -216,7 +216,7 @@ void instr_0x2d(i8080oObject *self) {
 }
 
 void instr_0x35(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCR M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -227,7 +227,7 @@ void instr_0x35(i8080oObject *self) {
 }
 
 void instr_0x3d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCR A\n");
     #endif
     self->A--;
@@ -242,7 +242,7 @@ CMA Complement Accumulator
 */
 
 void instr_0x2f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMA\n");
     #endif
     self->A = ~self->A;
@@ -254,7 +254,7 @@ DAA Decimal Adjust Accumulator
 */
 
 void instr_0x27(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DAA\n");
     #endif
     // check if lower nibble is greater than 9 or if AC is set
@@ -283,7 +283,7 @@ void instr_0x27(i8080oObject *self) {
 NOP Instruction
 */
 void instr_0x00(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("NOP\n");
     #endif
     self->PC++;
@@ -298,14 +298,14 @@ MOV Move Register or Memory to Register
 */
 
 void instr_0x40(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV B,B\n");
     #endif
     self->PC++;
 }
 
 void instr_0x41(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV B,C\n");
     #endif
     self->B = self->C;
@@ -313,7 +313,7 @@ void instr_0x41(i8080oObject *self) {
 }
 
 void instr_0x42(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV B,D\n");
     #endif
     self->B = self->D;
@@ -321,7 +321,7 @@ void instr_0x42(i8080oObject *self) {
 }
 
 void instr_0x43(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV B,E\n");
     #endif
     self->B = self->E;
@@ -329,7 +329,7 @@ void instr_0x43(i8080oObject *self) {
 }
 
 void instr_0x44(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV B,H\n");
     #endif
     self->B = self->H;
@@ -337,7 +337,7 @@ void instr_0x44(i8080oObject *self) {
 }
 
 void instr_0x45(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV B,L\n");
     #endif
     self->B = self->L;
@@ -345,7 +345,7 @@ void instr_0x45(i8080oObject *self) {
 }
 
 void instr_0x46(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV B,M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -354,7 +354,7 @@ void instr_0x46(i8080oObject *self) {
 }
 
 void instr_0x47(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV B,A\n");
     #endif
     self->B = self->A;
@@ -362,7 +362,7 @@ void instr_0x47(i8080oObject *self) {
 }
 
 void instr_0x48(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV C,B\n");
     #endif
     self->C = self->B;
@@ -370,14 +370,14 @@ void instr_0x48(i8080oObject *self) {
 }
 
 void instr_0x49(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV C,C\n");
     #endif
     self->PC++;
 }
 
 void instr_0x4a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV C,D\n");
     #endif
     self->C = self->D;
@@ -385,7 +385,7 @@ void instr_0x4a(i8080oObject *self) {
 }
 
 void instr_0x4b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV C,E\n");
     #endif
     self->C = self->E;
@@ -393,7 +393,7 @@ void instr_0x4b(i8080oObject *self) {
 }
 
 void instr_0x4c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV C,H\n");
     #endif
     self->C = self->H;
@@ -401,7 +401,7 @@ void instr_0x4c(i8080oObject *self) {
 }
 
 void instr_0x4d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV C,L\n");
     #endif
     self->C = self->L;
@@ -409,7 +409,7 @@ void instr_0x4d(i8080oObject *self) {
 }
 
 void instr_0x4e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV C,M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -418,7 +418,7 @@ void instr_0x4e(i8080oObject *self) {
 }
 
 void instr_0x4f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV C,A\n");
     #endif
     self->C = self->A;
@@ -426,7 +426,7 @@ void instr_0x4f(i8080oObject *self) {
 }
 
 void instr_0x50(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV D,B\n");
     #endif
     self->D = self->B;
@@ -434,7 +434,7 @@ void instr_0x50(i8080oObject *self) {
 }
 
 void instr_0x51(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV D,C\n");
     #endif
     self->D = self->C;
@@ -442,14 +442,14 @@ void instr_0x51(i8080oObject *self) {
 }
 
 void instr_0x52(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV D,D\n");
     #endif
     self->PC++;
 }
 
 void instr_0x53(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV D,E\n");
     #endif
     self->D = self->E;
@@ -457,7 +457,7 @@ void instr_0x53(i8080oObject *self) {
 }
 
 void instr_0x54(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV D,H\n");
     #endif
     self->D = self->H;
@@ -465,7 +465,7 @@ void instr_0x54(i8080oObject *self) {
 }
 
 void instr_0x55(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV D,L\n");
     #endif
     self->D = self->L;
@@ -473,7 +473,7 @@ void instr_0x55(i8080oObject *self) {
 }
 
 void instr_0x56(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV D,M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -482,7 +482,7 @@ void instr_0x56(i8080oObject *self) {
 }
 
 void instr_0x57(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV D,A\n");
     #endif
     self->D = self->A;
@@ -490,7 +490,7 @@ void instr_0x57(i8080oObject *self) {
 }
 
 void instr_0x58(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV E,B\n");
     #endif
     self->E = self->B;
@@ -498,7 +498,7 @@ void instr_0x58(i8080oObject *self) {
 }
 
 void instr_0x59(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV E,C\n");
     #endif
     self->E = self->C;
@@ -506,7 +506,7 @@ void instr_0x59(i8080oObject *self) {
 }
 
 void instr_0x5a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV E,D\n");
     #endif
     self->E = self->D;
@@ -514,14 +514,14 @@ void instr_0x5a(i8080oObject *self) {
 }
 
 void instr_0x5b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV E,E\n");
     #endif
     self->PC++;
 }
 
 void instr_0x5c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV E,H\n");
     #endif
     self->E = self->H;
@@ -529,7 +529,7 @@ void instr_0x5c(i8080oObject *self) {
 }
 
 void instr_0x5d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV E,L\n");
     #endif
     self->E = self->L;
@@ -537,7 +537,7 @@ void instr_0x5d(i8080oObject *self) {
 }
 
 void instr_0x5e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV E,M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -546,7 +546,7 @@ void instr_0x5e(i8080oObject *self) {
 }
 
 void instr_0x5f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV E,A\n");
     #endif
     self->E = self->A;
@@ -554,7 +554,7 @@ void instr_0x5f(i8080oObject *self) {
 }
 
 void instr_0x60(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV H,B\n");
     #endif
     self->H = self->B;
@@ -562,7 +562,7 @@ void instr_0x60(i8080oObject *self) {
 }
 
 void instr_0x61(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV H,C\n");
     #endif
     self->H = self->C;
@@ -570,7 +570,7 @@ void instr_0x61(i8080oObject *self) {
 }
 
 void instr_0x62(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV H,D\n");
     #endif
     self->H = self->D;
@@ -578,7 +578,7 @@ void instr_0x62(i8080oObject *self) {
 }
 
 void instr_0x63(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV H,E\n");
     #endif
     self->H = self->E;
@@ -586,14 +586,14 @@ void instr_0x63(i8080oObject *self) {
 }
 
 void instr_0x64(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV H,H\n");
     #endif
     self->PC++;
 }
 
 void instr_0x65(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV H,L\n");
     #endif
     self->H = self->L;
@@ -601,7 +601,7 @@ void instr_0x65(i8080oObject *self) {
 }
 
 void instr_0x66(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV H,M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -610,7 +610,7 @@ void instr_0x66(i8080oObject *self) {
 }
 
 void instr_0x67(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV H,A\n");
     #endif
     self->H = self->A;
@@ -618,7 +618,7 @@ void instr_0x67(i8080oObject *self) {
 }
 
 void instr_0x68(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV L,B\n");
     #endif
     self->L = self->B;
@@ -626,7 +626,7 @@ void instr_0x68(i8080oObject *self) {
 }
 
 void instr_0x69(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV L,C\n");
     #endif
     self->L = self->C;
@@ -634,7 +634,7 @@ void instr_0x69(i8080oObject *self) {
 }
 
 void instr_0x6a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV L,D\n");
     #endif
     self->L = self->D;
@@ -642,7 +642,7 @@ void instr_0x6a(i8080oObject *self) {
 }
 
 void instr_0x6b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV L,E\n");
     #endif
     self->L = self->E;
@@ -650,7 +650,7 @@ void instr_0x6b(i8080oObject *self) {
 }
 
 void instr_0x6c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV L,H\n");
     #endif
     self->L = self->H;
@@ -658,14 +658,14 @@ void instr_0x6c(i8080oObject *self) {
 }
 
 void instr_0x6d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV L,L\n");
     #endif
     self->PC++;
 }
 
 void instr_0x6e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV L,M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -674,7 +674,7 @@ void instr_0x6e(i8080oObject *self) {
 }
 
 void instr_0x6f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV L,A\n");
     #endif
     self->L = self->A;
@@ -682,7 +682,7 @@ void instr_0x6f(i8080oObject *self) {
 }
 
 void instr_0x70(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV M,B\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -691,7 +691,7 @@ void instr_0x70(i8080oObject *self) {
 }
 
 void instr_0x71(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV M,C\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -700,7 +700,7 @@ void instr_0x71(i8080oObject *self) {
 }
 
 void instr_0x72(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV M,D\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -709,7 +709,7 @@ void instr_0x72(i8080oObject *self) {
 }
 
 void instr_0x73(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV M,E\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -718,7 +718,7 @@ void instr_0x73(i8080oObject *self) {
 }
 
 void instr_0x74(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV M,H\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -727,7 +727,7 @@ void instr_0x74(i8080oObject *self) {
 }
 
 void instr_0x75(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV M,L\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -736,7 +736,7 @@ void instr_0x75(i8080oObject *self) {
 }
 
 void instr_0x77(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV M,A\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -745,7 +745,7 @@ void instr_0x77(i8080oObject *self) {
 }
 
 void instr_0x78(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV A,B\n");
     #endif
     self->A = self->B;
@@ -753,7 +753,7 @@ void instr_0x78(i8080oObject *self) {
 }
 
 void instr_0x79(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV A,C\n");
     #endif
     self->A = self->C;
@@ -761,7 +761,7 @@ void instr_0x79(i8080oObject *self) {
 }
 
 void instr_0x7a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV A,D\n");
     #endif
     self->A = self->D;
@@ -769,7 +769,7 @@ void instr_0x7a(i8080oObject *self) {
 }
 
 void instr_0x7b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV A,E\n");
     #endif
     self->A = self->E;
@@ -777,7 +777,7 @@ void instr_0x7b(i8080oObject *self) {
 }
 
 void instr_0x7c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV A,H\n");
     #endif
     self->A = self->H;
@@ -785,7 +785,7 @@ void instr_0x7c(i8080oObject *self) {
 }
 
 void instr_0x7d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV A,L\n");
     #endif
     self->A = self->L;
@@ -793,7 +793,7 @@ void instr_0x7d(i8080oObject *self) {
 }
 
 void instr_0x7e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV A,M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -802,14 +802,14 @@ void instr_0x7e(i8080oObject *self) {
 }
 
 void instr_0x7f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MOV A,A\n");
     #endif
     self->PC++;
 }
 
 void instr_0x02(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("STAX B\n");
     #endif
     uint16_t addr = (self->B << 8) | self->C;
@@ -818,7 +818,7 @@ void instr_0x02(i8080oObject *self) {
 }
 
 void instr_0x12(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("STAX D\n");
     #endif
     uint16_t addr = (self->D << 8) | self->E;
@@ -827,7 +827,7 @@ void instr_0x12(i8080oObject *self) {
 }
 
 void instr_0x0a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("LDAX B\n");
     #endif
     uint16_t addr = (self->B << 8) | self->C;
@@ -836,7 +836,7 @@ void instr_0x0a(i8080oObject *self) {
 }
 
 void instr_0x1a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("LDAX D\n");
     #endif
     uint16_t addr = (self->D << 8) | self->E;
@@ -869,7 +869,7 @@ static inline void update_flags_add(i8080oObject *self, uint16_t result){
 }
 
 void instr_0x80(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADD B\n");
     #endif
     uint16_t result = self->A + self->B;
@@ -879,7 +879,7 @@ void instr_0x80(i8080oObject *self) {
 }
 
 void instr_0x81(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADD C\n");
     #endif
     uint16_t result = self->A + self->C;
@@ -889,7 +889,7 @@ void instr_0x81(i8080oObject *self) {
 }
 
 void instr_0x82(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADD D\n");
     #endif
     uint16_t result = self->A + self->D;
@@ -899,7 +899,7 @@ void instr_0x82(i8080oObject *self) {
 }
 
 void instr_0x83(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADD E\n");
     #endif
     uint16_t result = self->A + self->E;
@@ -909,7 +909,7 @@ void instr_0x83(i8080oObject *self) {
 }
 
 void instr_0x84(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADD H\n");
     #endif
     uint16_t result = self->A + self->H;
@@ -919,7 +919,7 @@ void instr_0x84(i8080oObject *self) {
 }
 
 void instr_0x85(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADD L\n");
     #endif
     uint16_t result = self->A + self->L;
@@ -929,7 +929,7 @@ void instr_0x85(i8080oObject *self) {
 }
 
 void instr_0x86(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADD M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -940,7 +940,7 @@ void instr_0x86(i8080oObject *self) {
 }
 
 void instr_0x87(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADD A\n");
     #endif
     uint16_t result = self->A + self->A;
@@ -963,7 +963,7 @@ Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
 */
 
 void instr_0x88(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADC B\n");
     #endif
     uint16_t result = self->A + self->B + self->CC.cy;
@@ -973,7 +973,7 @@ void instr_0x88(i8080oObject *self) {
 }
 
 void instr_0x89(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADC C\n");
     #endif
     uint16_t result = self->A + self->C + self->CC.cy;
@@ -983,7 +983,7 @@ void instr_0x89(i8080oObject *self) {
 }
 
 void instr_0x8a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADC D\n");
     #endif
     uint16_t result = self->A + self->D + self->CC.cy;
@@ -993,7 +993,7 @@ void instr_0x8a(i8080oObject *self) {
 }
 
 void instr_0x8b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADC E\n");
     #endif
     uint16_t result = self->A + self->E + self->CC.cy;
@@ -1003,7 +1003,7 @@ void instr_0x8b(i8080oObject *self) {
 }
 
 void instr_0x8c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADC H\n");
     #endif
     uint16_t result = self->A + self->H + self->CC.cy;
@@ -1013,7 +1013,7 @@ void instr_0x8c(i8080oObject *self) {
 }
 
 void instr_0x8d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADC L\n");
     #endif
     uint16_t result = self->A + self->L + self->CC.cy;
@@ -1023,7 +1023,7 @@ void instr_0x8d(i8080oObject *self) {
 }
 
 void instr_0x8e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADC M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -1034,7 +1034,7 @@ void instr_0x8e(i8080oObject *self) {
 }
 
 void instr_0x8f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADC A\n");
     #endif
     uint16_t result = self->A + self->A + self->CC.cy;
@@ -1066,7 +1066,7 @@ static inline void update_flags_sub(i8080oObject *self, uint16_t result){
 }
 
 void instr_0x90(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUB B\n");
     #endif
     uint16_t result = self->A + (~self->B) + 1; // add the 2's complement of B and 1
@@ -1076,7 +1076,7 @@ void instr_0x90(i8080oObject *self) {
 }
 
 void instr_0x91(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUB C\n");
     #endif
     uint16_t result = self->A + (~self->C) + 1; // add the 2's complement of C and 1
@@ -1086,7 +1086,7 @@ void instr_0x91(i8080oObject *self) {
 }
 
 void instr_0x92(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUB D\n");
     #endif
     uint16_t result = self->A + (~self->D) + 1; // add the 2's complement of D and 1
@@ -1096,7 +1096,7 @@ void instr_0x92(i8080oObject *self) {
 }
 
 void instr_0x93(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUB E\n");
     #endif
     uint16_t result = self->A + (~self->E) + 1; // add the 2's complement of E and 1
@@ -1106,7 +1106,7 @@ void instr_0x93(i8080oObject *self) {
 }
 
 void instr_0x94(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUB H\n");
     #endif
     uint16_t result = self->A + (~self->H) + 1; // add the 2's complement of H and 1
@@ -1116,7 +1116,7 @@ void instr_0x94(i8080oObject *self) {
 }
 
 void instr_0x95(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUB L\n");
     #endif
     uint16_t result = self->A + (~self->L) + 1; // add the 2's complement of L and 1
@@ -1127,7 +1127,7 @@ void instr_0x95(i8080oObject *self) {
 
 void instr_0x96(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUB M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -1138,7 +1138,7 @@ void instr_0x96(i8080oObject *self) {
 }
 
 void instr_0x97(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUB A\n");
     #endif
     uint16_t result = self->A + (~self->A) + 1; // add the 2's complement of A and 1
@@ -1161,7 +1161,7 @@ Auxiliary Carry Flag: Set if borrow from bit 4; reset otherwise.
 */
 
 void instr_0x98(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBB B\n");
     #endif
     uint16_t result = self->A + ~(self->B + self->CC.cy) +  1; // no idea what happens if B + 1 overflows
@@ -1171,7 +1171,7 @@ void instr_0x98(i8080oObject *self) {
 }
 
 void instr_0x99(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBB C\n");
     #endif
     uint16_t result = self->A + ~(self->C + self->CC.cy) +  1;
@@ -1181,7 +1181,7 @@ void instr_0x99(i8080oObject *self) {
 }
 
 void instr_0x9a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBB D\n");
     #endif
     uint16_t result = self->A + ~(self->D + self->CC.cy) +  1;
@@ -1191,7 +1191,7 @@ void instr_0x9a(i8080oObject *self) {
 }
 
 void instr_0x9b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBB E\n");
     #endif
     uint16_t result = self->A + ~(self->E + self->CC.cy) +  1;
@@ -1201,7 +1201,7 @@ void instr_0x9b(i8080oObject *self) {
 }
 
 void instr_0x9c(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBB H\n");
     #endif
     uint16_t result = self->A + ~(self->H + self->CC.cy) +  1;
@@ -1211,7 +1211,7 @@ void instr_0x9c(i8080oObject *self) {
 }
 
 void instr_0x9d(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBB L\n");
     #endif
     uint16_t result = self->A + ~(self->L + self->CC.cy) +  1;
@@ -1221,7 +1221,7 @@ void instr_0x9d(i8080oObject *self) {
 }
 
 void instr_0x9e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBB M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -1232,7 +1232,7 @@ void instr_0x9e(i8080oObject *self) {
 }
 
 void instr_0x9f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBB A\n");
     #endif
     uint16_t result = self->A + ~(self->A + self->CC.cy) +  1;
@@ -1261,7 +1261,7 @@ static inline void update_flags_ana(i8080oObject *self) {
 }
 
 void instr_0xa0(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANA B\n");
     #endif
     self->A = self->A & self->B;
@@ -1270,7 +1270,7 @@ void instr_0xa0(i8080oObject *self) {
 }
 
 void instr_0xa1(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANA C\n");
     #endif
     self->A = self->A & self->C;
@@ -1279,7 +1279,7 @@ void instr_0xa1(i8080oObject *self) {
 }
 
 void instr_0xa2(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANA D\n");
     #endif
     self->A = self->A & self->D;
@@ -1288,7 +1288,7 @@ void instr_0xa2(i8080oObject *self) {
 }
 
 void instr_0xa3(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANA E\n");
     #endif
     self->A = self->A & self->E;
@@ -1297,7 +1297,7 @@ void instr_0xa3(i8080oObject *self) {
 }
 
 void instr_0xa4(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANA H\n");
     #endif
     self->A = self->A & self->H;
@@ -1306,7 +1306,7 @@ void instr_0xa4(i8080oObject *self) {
 }
 
 void instr_0xa5(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANA L\n");
     #endif
     self->A = self->A & self->L;
@@ -1315,7 +1315,7 @@ void instr_0xa5(i8080oObject *self) {
 }
 
 void instr_0xa6(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANA M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -1326,7 +1326,7 @@ void instr_0xa6(i8080oObject *self) {
 
 void instr_0xa7(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANA A\n");
     #endif
     self->A = self->A & self->A;
@@ -1356,7 +1356,7 @@ static inline void update_flags_xra(i8080oObject *self) {
 }
 
 void instr_0xa8(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRA B\n");
     #endif
     self->A = self->A ^ self->B;
@@ -1365,7 +1365,7 @@ void instr_0xa8(i8080oObject *self) {
 }
 
 void instr_0xa9(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRA C\n");
     #endif
     self->A = self->A ^ self->C;
@@ -1374,7 +1374,7 @@ void instr_0xa9(i8080oObject *self) {
 }
 
 void instr_0xaa(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRA D\n");
     #endif
     self->A = self->A ^ self->D;
@@ -1383,7 +1383,7 @@ void instr_0xaa(i8080oObject *self) {
 }
 
 void instr_0xab(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRA E\n");
     #endif
     self->A = self->A ^ self->E;
@@ -1392,7 +1392,7 @@ void instr_0xab(i8080oObject *self) {
 }
 
 void instr_0xac(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRA H\n");
     #endif
     self->A = self->A ^ self->H;
@@ -1401,7 +1401,7 @@ void instr_0xac(i8080oObject *self) {
 }
 
 void instr_0xad(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRA L\n");
     #endif
     self->A = self->A ^ self->L;
@@ -1410,7 +1410,7 @@ void instr_0xad(i8080oObject *self) {
 }
 
 void instr_0xae(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRA M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -1420,7 +1420,7 @@ void instr_0xae(i8080oObject *self) {
 }
 
 void instr_0xaf(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRA A\n");
     #endif
     self->A = self->A ^ self->A;
@@ -1448,7 +1448,7 @@ static inline void update_flags_ora(i8080oObject *self) {
 }
 
 void instr_0xb0(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORA B\n");
     #endif
     self->A = self->A | self->B;
@@ -1457,7 +1457,7 @@ void instr_0xb0(i8080oObject *self) {
 }
 
 void instr_0xb1(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORA C\n");
     #endif
     self->A = self->A | self->C;
@@ -1466,7 +1466,7 @@ void instr_0xb1(i8080oObject *self) {
 }
 
 void instr_0xb2(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORA D\n");
     #endif
     self->A = self->A | self->D;
@@ -1475,7 +1475,7 @@ void instr_0xb2(i8080oObject *self) {
 }
 
 void instr_0xb3(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORA E\n");
     #endif
     self->A = self->A | self->E;
@@ -1484,7 +1484,7 @@ void instr_0xb3(i8080oObject *self) {
 }
 
 void instr_0xb4(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORA H\n");
     #endif
     self->A = self->A | self->H;
@@ -1493,7 +1493,7 @@ void instr_0xb4(i8080oObject *self) {
 }
 
 void instr_0xb5(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORA L\n");
     #endif
     self->A = self->A | self->L;
@@ -1502,7 +1502,7 @@ void instr_0xb5(i8080oObject *self) {
 }
 
 void instr_0xb6(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORA M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -1512,7 +1512,7 @@ void instr_0xb6(i8080oObject *self) {
 }
 
 void instr_0xb7(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORA A\n");
     #endif
     self->A = self->A | self->A;
@@ -1542,7 +1542,7 @@ static inline void update_flags_cmp(i8080oObject *self, uint8_t reg) {
 }
 
 void instr_0xb8(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMP B\n");
     #endif
     update_flags_cmp(self, self->B);
@@ -1550,7 +1550,7 @@ void instr_0xb8(i8080oObject *self) {
 }
 
 void instr_0xb9(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMP C\n");
     #endif
     update_flags_cmp(self, self->C);
@@ -1558,7 +1558,7 @@ void instr_0xb9(i8080oObject *self) {
 }
 
 void instr_0xba(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMP D\n");
     #endif
     update_flags_cmp(self, self->D);
@@ -1566,7 +1566,7 @@ void instr_0xba(i8080oObject *self) {
 }
 
 void instr_0xbb(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMP E\n");
     #endif
     update_flags_cmp(self, self->E);
@@ -1574,7 +1574,7 @@ void instr_0xbb(i8080oObject *self) {
 }
 
 void instr_0xbc(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMP H\n");
     #endif
     update_flags_cmp(self, self->H);
@@ -1582,7 +1582,7 @@ void instr_0xbc(i8080oObject *self) {
 }
 
 void instr_0xbd(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMP L\n");
     #endif
     update_flags_cmp(self, self->L);
@@ -1590,7 +1590,7 @@ void instr_0xbd(i8080oObject *self) {
 }
 
 void instr_0xbe(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMP M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -1599,7 +1599,7 @@ void instr_0xbe(i8080oObject *self) {
 }
 
 void instr_0xbf(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CMP A\n");
     #endif
     update_flags_cmp(self, self->A);
@@ -1620,7 +1620,7 @@ Carry Flag: Set to value of bit 7 of accumulator before operation.
 */
 
 void instr_0x07(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RLC\n");
     #endif
     uint8_t result = self->A << 1;
@@ -1639,7 +1639,7 @@ Carry Flag: Set to value of bit 0 of accumulator before operation.
 */
 
 void instr_0x0f(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RRC\n");
     #endif
     uint8_t result = self->A;
@@ -1658,7 +1658,7 @@ Carry Flag: Set to value of bit 7 of accumulator before operation.
 */
 
 void instr_0x17(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RAL\n");
     #endif
     uint8_t result = self->A << 1;
@@ -1679,7 +1679,7 @@ Carry Flag: Set to value of bit 0 of accumulator before operation.
 
 void instr_0x1f(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RAR\n");
     #endif
     uint8_t result = self->A >> 1;
@@ -1703,7 +1703,7 @@ All condition bits are unaffected.
 */
 
 void instr_0xc5(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("PUSH B\n");
     #endif
     self->memory[self->SP-1] = self->B;
@@ -1713,7 +1713,7 @@ void instr_0xc5(i8080oObject *self) {
 }
 
 void instr_0xd5(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("PUSH D\n");
     #endif
     self->memory[self->SP-1] = self->D;
@@ -1723,7 +1723,7 @@ void instr_0xd5(i8080oObject *self) {
 }
 
 void instr_0xe5(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("PUSH H\n");
     #endif
     self->memory[self->SP-1] = self->H;
@@ -1733,7 +1733,7 @@ void instr_0xe5(i8080oObject *self) {
 }
 
 void instr_0xf5(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("PUSH PSW\n");
     #endif
     self->memory[self->SP-1] = self->A;
@@ -1752,7 +1752,7 @@ All condition bits are unaffected.
 */
 
 void instr_0xc1(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("POP B\n");
     #endif
     self->C = self->memory[self->SP];
@@ -1762,7 +1762,7 @@ void instr_0xc1(i8080oObject *self) {
 }
 
 void instr_0xd1(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("POP D\n");
     #endif
     self->E = self->memory[self->SP];
@@ -1772,7 +1772,7 @@ void instr_0xd1(i8080oObject *self) {
 }
 
 void instr_0xe1(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("POP H\n");
     #endif
     self->L = self->memory[self->SP];
@@ -1782,7 +1782,7 @@ void instr_0xe1(i8080oObject *self) {
 }
 
 void instr_0xf1(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("POP PSW\n");
     #endif
     self->A = self->memory[self->SP+1];
@@ -1806,7 +1806,7 @@ Carry Flag: Set if carry from bit 15
 */
 
 void instr_0x09(i8080oObject * self){
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DAD B\n");
     #endif
     uint32_t hl = (self->H << 8) | self->L;
@@ -1819,7 +1819,7 @@ void instr_0x09(i8080oObject * self){
 }
 
 void instr_0x19(i8080oObject * self){
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DAD D\n");
     #endif
     uint32_t hl = (self->H << 8) | self->L;
@@ -1833,7 +1833,7 @@ void instr_0x19(i8080oObject * self){
 }
 
 void instr_0x29(i8080oObject * self){
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DAD H\n");
     #endif
     uint32_t hl = (self->H << 8) | self->L;
@@ -1845,7 +1845,7 @@ void instr_0x29(i8080oObject * self){
 }
 
 void instr_0x39(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DAD SP\n");
     #endif
     uint32_t sp = self->SP;
@@ -1867,7 +1867,7 @@ All condition bits are unaffected.
 */
 
 void instr_0x03(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INX B\n");
     #endif
     self->C++;
@@ -1878,7 +1878,7 @@ void instr_0x03(i8080oObject *self) {
 }
 
 void instr_0x13(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INX D\n");
     #endif
     self->E++;
@@ -1889,7 +1889,7 @@ void instr_0x13(i8080oObject *self) {
 }
 
 void instr_0x23(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INX H\n");
     #endif
     self->L++;
@@ -1901,7 +1901,7 @@ void instr_0x23(i8080oObject *self) {
 
 void instr_0x33(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("INX SP\n");
     #endif
     self->SP++;
@@ -1918,7 +1918,7 @@ All condition bits are unaffected.
 */
 
 void instr_0x0b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCX B\n");
     #endif
     self->C--;
@@ -1929,7 +1929,7 @@ void instr_0x0b(i8080oObject *self) {
 }
 
 void instr_0x1b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCX D\n");
     #endif
     self->E--;
@@ -1940,7 +1940,7 @@ void instr_0x1b(i8080oObject *self) {
 }
 
 void instr_0x2b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCX H\n");
     #endif
     self->L--;
@@ -1951,7 +1951,7 @@ void instr_0x2b(i8080oObject *self) {
 }
 
 void instr_0x3b(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DCX SP\n");
     #endif
     self->SP--;
@@ -1968,7 +1968,7 @@ All condition bits are unaffected.
 */
 
 void instr_0xeb(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XCHG\n");
     #endif
     uint8_t save1 = self->D;
@@ -1990,7 +1990,7 @@ All condition bits are unaffected.
 */
 
 void instr_0xe3(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XTHL\n");
     #endif
     uint8_t save1 = self->memory[self->SP];
@@ -2012,7 +2012,7 @@ All condition bits are unaffected.
 */
 
 void instr_0xf9(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SPHL\n");
     #endif
     self->SP = (self->H << 8) | self->L;
@@ -2033,7 +2033,7 @@ All condition bits are unaffected.
 */
 
 void instr_0x01(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("LXI B\n");
     #endif
     self->C = self->memory[self->PC + 1];
@@ -2042,7 +2042,7 @@ void instr_0x01(i8080oObject *self) {
 }
 
 void instr_0x11(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("LXI D\n");
     #endif
     self->E = self->memory[self->PC + 1];
@@ -2051,7 +2051,7 @@ void instr_0x11(i8080oObject *self) {
 }
 
 void instr_0x21(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("LXI H\n");
     #endif
     self->L = self->memory[self->PC + 1];
@@ -2060,7 +2060,7 @@ void instr_0x21(i8080oObject *self) {
 }
 
 void instr_0x31(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("LXI SP\n");
     #endif
     self->SP = (self->memory[self->PC + 2] << 8) + self->memory[self->PC + 1];
@@ -2077,7 +2077,7 @@ All condition bits are unaffected.
 */
 
 void instr_0x06(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MVI B\n");
     #endif
     self->B = self->memory[self->PC + 1];
@@ -2085,7 +2085,7 @@ void instr_0x06(i8080oObject *self) {
 }
 
 void instr_0x0e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MVI C\n");
     #endif
     self->C = self->memory[self->PC + 1];
@@ -2093,7 +2093,7 @@ void instr_0x0e(i8080oObject *self) {
 }
 
 void instr_0x16(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MVI D\n");
     #endif
     self->D = self->memory[self->PC + 1];
@@ -2101,7 +2101,7 @@ void instr_0x16(i8080oObject *self) {
 }
 
 void instr_0x1e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MVI E\n");
     #endif
     self->E = self->memory[self->PC + 1];
@@ -2109,7 +2109,7 @@ void instr_0x1e(i8080oObject *self) {
 }
 
 void instr_0x26(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MVI H\n");
     #endif
     self->H = self->memory[self->PC + 1];
@@ -2117,7 +2117,7 @@ void instr_0x26(i8080oObject *self) {
 }
 
 void instr_0x2e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MVI L\n");
     #endif
     self->L = self->memory[self->PC + 1];
@@ -2125,7 +2125,7 @@ void instr_0x2e(i8080oObject *self) {
 }
 
 void instr_0x36(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MVI M\n");
     #endif
     uint16_t addr = (self->H << 8) | self->L;
@@ -2134,7 +2134,7 @@ void instr_0x36(i8080oObject *self) {
 }
 
 void instr_0x3e(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("MVI A\n");
     #endif
     self->A = self->memory[self->PC + 1];
@@ -2155,7 +2155,7 @@ Auxiliary Carry Flag: Set if carry from bit 3; otherwise, reset.
 */
 
 void instr_0xc6(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ADI\n");
     #endif
     uint16_t result = self->A + self->memory[self->PC+1];
@@ -2181,7 +2181,7 @@ Auxiliary Carry Flag: Set if carry from bit 3; otherwise, reset.
 */
 
 void instr_0xce(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ACI\n");
     #endif
     uint16_t result = self->A + self->memory[self->PC+1] + self->CC.cy;
@@ -2207,7 +2207,7 @@ Auxiliary Carry Flag: Set if borrow from bit 3; otherwise, reset.
 */
 
 void instr_0xd6(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SUI\n");
     #endif
     uint16_t result = self->A + (~self->memory[self->PC+1]) + 1;
@@ -2230,7 +2230,7 @@ Auxiliary Carry Flag: Set if borrow from bit 3; otherwise, reset.
 */
 
 void instr_0xde(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SBI\n");
     #endif
     uint16_t result = self->A + ~(self->memory[self->PC+1] + self->CC.cy) +  1;
@@ -2252,7 +2252,7 @@ Parity Flag: Set if result is even parity; otherwise, reset.
 */
 
 void instr_0xe6(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ANI\n");
     #endif
     self->A = self->A & self->memory[self->PC+1];
@@ -2273,7 +2273,7 @@ Parity Flag: Set if result is even parity; otherwise, reset.
 */
 
 void instr_0xee(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("XRI\n");
     #endif
     self->A = self->A ^ self->memory[self->PC+1];
@@ -2294,7 +2294,7 @@ Parity Flag: Set if result is even parity; otherwise, reset.
 */
 
 void instr_0xf6(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("ORI\n");
     #endif
     self->A = self->A | self->memory[self->PC+1];
@@ -2316,7 +2316,7 @@ Auxiliary Carry Flag: Set if borrow from bit 3; otherwise, reset.
 */
 
 void instr_0xfe(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CPI\n");
     #endif
     update_flags_cmp(self, self->memory[self->PC+1]);
@@ -2336,7 +2336,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0x32(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("STA\n");
     #endif
     uint16_t addr = (self->memory[self->PC + 2] << 8) + self->memory[self->PC + 1];
@@ -2353,7 +2353,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0x3a(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("LDA\n");
     #endif
     uint16_t addr = (self->memory[self->PC + 2] << 8) + self->memory[self->PC + 1];
@@ -2370,7 +2370,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0x22(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("SHLD\n");
     #endif
     uint16_t addr = (self->memory[self->PC + 2] << 8)+ self->memory[self->PC + 1];
@@ -2389,7 +2389,7 @@ Condition Bits Affected: None.
 
 void instr_0x2a(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("LHLD\n");
     #endif
     uint16_t addr = (self->memory[self->PC + 2] << 8) + self->memory[self->PC + 1];
@@ -2411,7 +2411,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xe9(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("PCHL\n");
     #endif
     self->PC = (self->H << 8) | self->L;
@@ -2427,7 +2427,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xc3(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JMP\n");
     #endif
     self->PC = (self->memory[self->PC+2] << 8) | self->memory[self->PC+1];
@@ -2443,7 +2443,7 @@ Condition Bits Affected: None.
 
 void instr_0xda(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JC\n");
     #endif
     if (1 == self->CC.cy)
@@ -2462,7 +2462,7 @@ Condition Bits Affected: None.
 
 void instr_0xd2(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JNC\n");
     #endif
     if (0 == self->CC.cy)
@@ -2480,7 +2480,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xca(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JZ\n");
     #endif
     if (1 == self->CC.z)
@@ -2498,7 +2498,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xc2(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JNZ\n");
     #endif
     if (0 == self->CC.z)
@@ -2516,7 +2516,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xfa(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JM\n");
     #endif
     if (1 == self->CC.s)
@@ -2534,7 +2534,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xf2(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JP\n");
     #endif
     if (0 == self->CC.s)
@@ -2552,7 +2552,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xea(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JPE\n");
     #endif
     if (1 == self->CC.p)
@@ -2571,7 +2571,7 @@ Condition Bits Affected: None.
 
 void instr_0xe2(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("JPO\n");
     #endif
     if (0 == self->CC.p)
@@ -2592,7 +2592,7 @@ CALL Call
 Condition Bits Affected: None.
 */
 
-void call(i8080oObject *self, uint16_t ret) {
+static inline void call(i8080oObject *self, uint16_t ret) {
     self->memory[self->SP-1] = (ret >> 8) & 0xff;
     self->memory[self->SP-2] = (ret & 0xff);
     self->SP = self->SP - 2;
@@ -2600,7 +2600,7 @@ void call(i8080oObject *self, uint16_t ret) {
 }
 
 void instr_0xcd(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CALL\n");
     #endif
     call(self, self->PC+3);
@@ -2614,7 +2614,7 @@ Condition Bits Affected: None.
 
 void instr_0xdc(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CC\n");
     #endif
     if (1 == self->CC.cy) {
@@ -2631,7 +2631,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xd4(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CNC\n");
     #endif
     if (0 == self->CC.cy) {
@@ -2648,7 +2648,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xcc(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CZ\n");
     #endif
     if (1 == self->CC.z) {
@@ -2665,7 +2665,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xc4(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CNZ\n");
     #endif
     if (0 == self->CC.z) {
@@ -2682,7 +2682,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xfc(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CM\n");
     #endif
     if (1 == self->CC.s) {
@@ -2700,7 +2700,7 @@ Condition Bits Affected: None.
 
 void instr_0xf4(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CP\n");
     #endif
     if (0 == self->CC.s) {
@@ -2718,7 +2718,7 @@ Condition Bits Affected: None.
 
 void instr_0xec(i8080oObject *self) {
     // not verified
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CPE\n");
     #endif
     if (1 == self->CC.p) {
@@ -2735,7 +2735,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xe4(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("CPO\n");
     #endif
     if (0 == self->CC.p) {
@@ -2751,13 +2751,13 @@ void instr_0xe4(i8080oObject *self) {
 RET Return Instructions
 */
 
-void ret(i8080oObject *self) {
+static inline void ret(i8080oObject *self) {
     self->PC = (self->memory[self->SP+1] << 8) | self->memory[self->SP];
     self->SP = self->SP + 2;
 }
 
 void instr_0xc9(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RET\n");
     #endif
     ret(self);
@@ -2770,7 +2770,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xd8(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RC\n");
     #endif
     
@@ -2788,7 +2788,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xd0(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RNC\n");
     #endif
     if (0 == self->CC.cy) {
@@ -2806,7 +2806,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xc8(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RZ\n");
     #endif
     if (1 == self->CC.z) {
@@ -2823,7 +2823,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xc0(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RNZ\n");
     #endif
     if (0 == self->CC.z) {
@@ -2840,7 +2840,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xf8(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RM\n");
     #endif
     if (1 == self->CC.s) {
@@ -2857,7 +2857,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xf0(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RP\n");
     #endif
     if (0 == self->CC.s) {
@@ -2874,7 +2874,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xe8(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RPE\n");
     #endif
     if (1 == self->CC.p) {
@@ -2891,7 +2891,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xe0(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RPO\n");
     #endif
     if (0 == self->CC.p) {
@@ -2921,7 +2921,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xc7(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RST 0\n");
     #endif
     rst(self, 0x00);
@@ -2934,7 +2934,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xcf(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RST 1\n");
     #endif
     rst(self, 0x08);
@@ -2947,7 +2947,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xd7(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RST 2\n");
     #endif
     rst(self, 0x10); // not sure
@@ -2961,7 +2961,7 @@ Condition Bits Affected: None.
 
 
 void instr_0xdf(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RST 3\n");
     #endif
     rst(self, 18);
@@ -2974,7 +2974,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xe7(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RST 4\n");
     #endif
     rst(self, 0x20);
@@ -2987,7 +2987,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xef(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RST 5\n");
     #endif
     rst(self, 0x28);
@@ -3000,7 +3000,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xf7(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RST 6\n");
     #endif
     rst(self, 0x30);
@@ -3013,7 +3013,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xff(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("RST 7\n");
     #endif
     rst(self, 0x38);
@@ -3030,7 +3030,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xfb(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("EI\n");
     #endif
     self->CC.int_enable = 1;
@@ -3044,7 +3044,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xf3(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("DI\n");
     #endif
     self->CC.int_enable = 0;
@@ -3067,7 +3067,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xdb(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("IN\n");
     #endif
     uint8_t port = self->memory[self->PC+1];
@@ -3087,7 +3087,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0xd3(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("OUT\n");
     #endif
     uint8_t port = self->memory[self->PC+1];
@@ -3102,7 +3102,7 @@ Condition Bits Affected: None.
 */
 
 void instr_0x76(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("HLT\n");
     #endif
     self->CC.halt = 1;
@@ -3114,73 +3114,73 @@ Invalid Instruction
 */
 
 void instr_0x08(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0x10(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0x18(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0x20(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0x28(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0x30(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0x38(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0xd9(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0xdd(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0xed(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0xcb(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
 
 void instr_0xfd(i8080oObject *self) {
-    #ifdef DEBUG
+    #ifdef DEBUG_INSTRUCTIONS
     printf("Invalid Instruction\n");
     #endif
 }
