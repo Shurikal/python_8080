@@ -2,7 +2,7 @@
 #ifndef _I8080_OBJECT_H
 #define _I8080_OBJECT_H
 
-
+#include "Python.h"
 #include <stdint.h>
 #include <string.h>
 

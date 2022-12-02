@@ -651,11 +651,71 @@ i8080o_get_pc(i8080oObject* self, void* closure)
 }
 
 static PyObject*
+i8080o_get_hl(i8080oObject* self, void* closure)
+{
+    return Py_BuildValue("i", (self->H << 8) | self->L);
+}
+
+static PyObject*
 i8080o_get_m(i8080oObject* self, void* closure)
 {
 	uint16_t address = (self->H << 8) | self->L;
 	return Py_BuildValue("i", self->memory[address]);
 }
+
+static PyObject*
+i8080o_get_z(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->CC.z);
+}
+
+static PyObject*
+i8080o_get_s(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->CC.s);
+}
+
+static PyObject*
+i8080o_get_p(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->CC.p);
+}
+
+static PyObject*
+i8080o_get_cy(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->CC.cy);
+}
+
+static PyObject*
+i8080o_get_ac(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->CC.ac);
+}
+
+static PyObject*
+i8080o_get_int_enable(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->CC.int_enable);
+}
+
+static PyObject*
+i8080o_get_halt(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", self->CC.halt);
+}
+
+#define parse_bool(register) \
+	uint64_t val = PyLong_AsUnsignedLong(value);\
+    if (PyErr_Occurred()) {\
+        return -1;\
+    }\
+	if (val > 0x01){\
+		PyErr_SetString(PyExc_ValueError, "Value out of range");\
+		return -1;\
+	}\
+	self->CC.register = val;\
+    return 0;\
 
 #define parse_uint8_t(register) \
 	uint64_t val = PyLong_AsUnsignedLong(value);\
@@ -736,6 +796,22 @@ i8080o_set_pc(i8080oObject* self, PyObject* value, void* closure)
 }
 
 static int
+i8080o_set_hl(i8080oObject* self, PyObject* value, void* closure)
+{
+	uint64_t val = PyLong_AsUnsignedLong(value);
+	if (PyErr_Occurred()) {
+		return -1;
+	}
+	if (val > 0xFFFF){
+		PyErr_SetString(PyExc_ValueError, "Value out of range");
+		return -1;
+	}
+	self->H = (val >> 8) & 0xFF;
+	self->L = val & 0xFF;
+	return 0;
+}
+
+static int
 i8080o_set_m(i8080oObject* self, PyObject* value, void* closure)
 {
 	uint64_t val = PyLong_AsUnsignedLong(value);
@@ -751,19 +827,75 @@ i8080o_set_m(i8080oObject* self, PyObject* value, void* closure)
 	return 0;
 }
 
+
+static int
+i8080o_set_z(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_bool(z)
+}
+
+static int
+i8080o_set_s(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_bool(s)
+}
+
+static int
+i8080o_set_p(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_bool(p)
+}
+
+static int
+i8080o_set_cy(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_bool(cy)
+}
+
+static int
+i8080o_set_ac(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_bool(ac)
+}
+
+static int
+i8080o_set_int_enable(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_bool(int_enable)
+}
+
+static int
+i8080o_set_halt(i8080oObject* self, PyObject* value, void* closure)
+{
+	parse_bool(halt)
+}
+
 PyGetSetDef getsets[] = {
-	{"a", (getter) i8080o_get_a, (setter) i8080o_set_a, "set a register", NULL},
-	{"b", (getter) i8080o_get_b, (setter) i8080o_set_b, "set b register", NULL},
-	{"c", (getter) i8080o_get_c, (setter) i8080o_set_c, "set c register", NULL},
-	{"d", (getter) i8080o_get_d, (setter) i8080o_set_d, "set d register", NULL},
-	{"e", (getter) i8080o_get_e, (setter) i8080o_set_e, "set e register", NULL},
-	{"h", (getter) i8080o_get_h, (setter) i8080o_set_h, "set h register", NULL},
-	{"l", (getter) i8080o_get_l, (setter) i8080o_set_l, "set l register", NULL},
-	{"sp", (getter) i8080o_get_sp, (setter) i8080o_set_sp, "set sp register", NULL},
-	{"pc", (getter) i8080o_get_pc, (setter) i8080o_set_pc, "set pc register", NULL},
-	{"m", (getter) i8080o_get_m, (setter) i8080o_set_m, "set m", NULL},
+	{"a", 	(getter) i8080o_get_a, 		(setter) i8080o_set_a, 		"set a register", 		NULL},
+	{"b", 	(getter) i8080o_get_b, 		(setter) i8080o_set_b, 		"set b register", 		NULL},
+	{"c", 	(getter) i8080o_get_c, 		(setter) i8080o_set_c, 		"set c register", 		NULL},
+	{"d", 	(getter) i8080o_get_d, 		(setter) i8080o_set_d, 		"set d register", 		NULL},
+	{"e", 	(getter) i8080o_get_e, 		(setter) i8080o_set_e, 		"set e register", 		NULL},
+	{"h", 	(getter) i8080o_get_h, 		(setter) i8080o_set_h, 		"set h register", 		NULL},
+	{"l", 	(getter) i8080o_get_l, 		(setter) i8080o_set_l, 		"set l register", 		NULL},
+	{"sp",	(getter) i8080o_get_sp,		(setter) i8080o_set_sp,		"set sp register",		NULL},
+	{"pc",	(getter) i8080o_get_pc,		(setter) i8080o_set_pc,		"set pc register",		NULL},
+	{"hl",	(getter) i8080o_get_hl,		(setter) i8080o_set_hl,	 	"set hl register",		NULL},
+	{"m", 	(getter) i8080o_get_m, 		(setter) i8080o_set_m, 		"set m", 				NULL},
+	{"z", 	(getter) i8080o_get_z, 		(setter) i8080o_set_z, 		"set z", 				NULL},
+	{"s", 	(getter) i8080o_get_s, 		(setter) i8080o_set_s, 		"set s", 				NULL},
+	{"p", 	(getter) i8080o_get_p, 		(setter) i8080o_set_p, 		"set p", 				NULL},
+	{"cy", 	(getter) i8080o_get_cy, 	(setter) i8080o_set_cy, 	"set cy", 				NULL},
+	{"ac", 	(getter) i8080o_get_ac, 	(setter) i8080o_set_ac, 	"set ac", 				NULL},
+	{"int_enable", 	(getter) i8080o_get_int_enable, 	(setter) i8080o_set_int_enable, 	"set int_enable", 	NULL},
+	{"halt", 	(getter) i8080o_get_halt, 	(setter) i8080o_set_halt, 	"set halt", 	NULL},
     {NULL}
 };
+
+/*
+Methods to access the memory with the subscript operator
+*/
+
 
 static Py_ssize_t i8080o_len(i8080oObject* self) {
 	return (Py_ssize_t) MEMORY_SIZE;
