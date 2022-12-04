@@ -2,6 +2,7 @@
 #include "_i8080_module.h"
 #include "_i8080_object.h"
 #include "_i8080_constants.h"
+#include "_i8080_memory.h"
 
 
 extern const uint8_t opcodes_lengths[256];
@@ -48,7 +49,7 @@ Module Initialization
 /* List of functions defined in the module */
 
 // https://docs.python.org/3/c-api/structures.html?highlight=pymethoddef#c.PyMethodDef
-static PyMethodDef i8080_methods[] = {
+static PyMethodDef i8080_module_methods[] = {
     {"get_instruction_size",    (PyCFunction)get_instruction_size, METH_VARARGS, PyDoc_STR("get_instruction_size")},
     {"get_instruction_name",    (PyCFunction)get_instruction_name, METH_VARARGS, PyDoc_STR("get_instruction_name")},
     {NULL,              NULL}           /* sentinel */
@@ -67,6 +68,12 @@ i8080_exec(PyObject *m)
     printf("i8080_exec\n");
     #endif
 
+    if (PyType_Ready(&i8080oMemory_Type) < 0)
+        goto fail;
+
+    // don't add the i8080oMemory_Type to the module
+    PyModule_AddType(m, &i8080oMemory_Type);
+
     if (PyType_Ready(&i8080o_Type) < 0)
         goto fail;
 
@@ -80,7 +87,7 @@ i8080_exec(PyObject *m)
 }
 
 // https://docs.python.org/3/c-api/module.html?highlight=pymoduledef_slot#c.PyModuleDef_Slot
-static struct PyModuleDef_Slot i8080_slots[] = {
+static struct PyModuleDef_Slot i8080_module_slots[] = {
     {Py_mod_exec, i8080_exec},
     {0, NULL},
 };
@@ -91,8 +98,8 @@ static struct PyModuleDef i8080module = {
     "intel_8080",
     module_doc,
     0,
-    i8080_methods,
-    i8080_slots,
+    i8080_module_methods,
+    i8080_module_slots,
     NULL,
     NULL,
     NULL

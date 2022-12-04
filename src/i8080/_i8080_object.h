@@ -5,7 +5,7 @@
 #include "Python.h"
 #include <stdint.h>
 #include <string.h>
-
+#include "_i8080_memory.h"
 
 typedef struct ConditionCodes {
 	uint8_t		z:1;
@@ -32,6 +32,7 @@ typedef struct {
     uint16_t    PC;
     struct ConditionCodes  CC;
     uint8_t     *memory;        // Todo, make this a separate object for access like cpu.memory[] and not cpu[]
+    i8080oMemory *memory_new;
     PyObject    *x_attr;        /* Attributes dictionary */
 } i8080oObject;
 

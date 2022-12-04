@@ -578,16 +578,23 @@ i8080o_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 		}
 	}
 
+	// Create a new memory object
+	self->memory_new = PyObject_CallObject((PyObject *)&i8080oMemory_Type, NULL);
+
 	// Set the default values
     self->memory = malloc(MEMORY_SIZE);
-
-	reset(self);
 
     if (self->memory == NULL){
         PyErr_SetString(PyExc_MemoryError, "Could not allocate memory\n");
         return NULL;
     }
 
+	reset(self);
+	// Crashes
+	//PyObject_SetAttrString((PyObject *)self, "memory", (PyObject *) self->memory_new);
+
+
+	//PyObject_GenericSetAttr((PyObject *)self, PyUnicode_FromString("memory"), (PyObject *) self->memory_new);
 	return (PyObject *)self;
 }
 
@@ -596,7 +603,7 @@ static void
 i8080o_dealloc(i8080oObject *self)
 {
     #ifdef DEBUG
-    printf("Deallocating memory\n");
+    printf("Deallocating i8080oObject\n");
     #endif
     // free the memory
     if(self->memory != NULL){
@@ -943,6 +950,15 @@ i8080o_set_de(i8080oObject* self, PyObject* value, void* closure)
 	return 0;
 }
 
+static PyObject *
+i8080o_get_memory_new(i8080oObject* self, void* closure)
+{
+	Py_INCREF(self->memory_new);
+	return (PyObject *) self->memory_new;
+}
+
+
+
 PyGetSetDef getsets[] = {
 	{"a", 			(getter) i8080o_get_a, 				(setter) i8080o_set_a, 				"set a register", 		NULL},
 	{"b", 			(getter) i8080o_get_b, 				(setter) i8080o_set_b, 				"set b register", 		NULL},
@@ -964,6 +980,7 @@ PyGetSetDef getsets[] = {
 	{"ac", 			(getter) i8080o_get_ac, 			(setter) i8080o_set_ac, 			"set ac", 				NULL},
 	{"int_enable", 	(getter) i8080o_get_int_enable, 	(setter) i8080o_set_int_enable, 	"set int_enable", 		NULL},
 	{"halt", 		(getter) i8080o_get_halt, 			(setter) i8080o_set_halt, 			"set halt", 			NULL},
+	{"memory_new", 	(getter) i8080o_get_memory_new, 	NULL, 								"memory_new", 			NULL},
     {NULL}
 };
 
@@ -1035,7 +1052,7 @@ static PySequenceMethods i8080o_SeqMethods = {
 // not static because it is used in the module init function
 PyTypeObject i8080o_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "_i8080.i8080oObject",
+    .tp_name = "_i8080.i8080uC",
     .tp_basicsize = sizeof(i8080oObject),
     .tp_dealloc = (destructor)i8080o_dealloc,
 	.tp_new = i8080o_new,
