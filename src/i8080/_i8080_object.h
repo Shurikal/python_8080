@@ -31,7 +31,7 @@ typedef struct {
     uint16_t    SP;
     uint16_t    PC;
     struct ConditionCodes  CC;
-    uint8_t     *memory;
+    uint8_t     *memory;        // Todo, make this a separate object for access like cpu.memory[] and not cpu[]
     PyObject    *x_attr;        /* Attributes dictionary */
 } i8080oObject;
 

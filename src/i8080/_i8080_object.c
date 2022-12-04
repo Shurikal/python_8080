@@ -705,6 +705,18 @@ i8080o_get_halt(i8080oObject* self, void* closure)
 	return Py_BuildValue("i", self->CC.halt);
 }
 
+static PyObject*
+i8080o_get_bc(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", (self->B << 8) | self->C);
+}
+
+static PyObject*
+i8080o_get_de(i8080oObject* self, void* closure)
+{
+	return Py_BuildValue("i", (self->D << 8) | self->E);
+}
+
 #define parse_bool(register) \
 	uint64_t val = PyLong_AsUnsignedLong(value);\
     if (PyErr_Occurred()) {\
@@ -870,6 +882,38 @@ i8080o_set_halt(i8080oObject* self, PyObject* value, void* closure)
 	parse_bool(halt)
 }
 
+static int
+i8080o_set_bc(i8080oObject* self, PyObject* value, void* closure)
+{
+	uint64_t val = PyLong_AsUnsignedLong(value);
+	if (PyErr_Occurred()) {
+		return -1;
+	}
+	if (val > 0xFFFF){
+		PyErr_SetString(PyExc_ValueError, "Value out of range");
+		return -1;
+	}
+	self->B = (val >> 8) & 0xFF;
+	self->C = val & 0xFF;
+	return 0;
+}
+
+static int
+i8080o_set_de(i8080oObject* self, PyObject* value, void* closure)
+{
+	uint64_t val = PyLong_AsUnsignedLong(value);
+	if (PyErr_Occurred()) {
+		return -1;
+	}
+	if (val > 0xFFFF){
+		PyErr_SetString(PyExc_ValueError, "Value out of range");
+		return -1;
+	}
+	self->D = (val >> 8) & 0xFF;
+	self->E = val & 0xFF;
+	return 0;
+}
+
 PyGetSetDef getsets[] = {
 	{"a", 	(getter) i8080o_get_a, 		(setter) i8080o_set_a, 		"set a register", 		NULL},
 	{"b", 	(getter) i8080o_get_b, 		(setter) i8080o_set_b, 		"set b register", 		NULL},
@@ -880,6 +924,8 @@ PyGetSetDef getsets[] = {
 	{"l", 	(getter) i8080o_get_l, 		(setter) i8080o_set_l, 		"set l register", 		NULL},
 	{"sp",	(getter) i8080o_get_sp,		(setter) i8080o_set_sp,		"set sp register",		NULL},
 	{"pc",	(getter) i8080o_get_pc,		(setter) i8080o_set_pc,		"set pc register",		NULL},
+	{"bc",  (getter) i8080o_get_bc,    (setter) i8080o_set_bc,     "set bc register",      NULL},
+	{"de",  (getter) i8080o_get_de,     (setter) i8080o_set_de,     "set de register",      NULL},
 	{"hl",	(getter) i8080o_get_hl,		(setter) i8080o_set_hl,	 	"set hl register",		NULL},
 	{"m", 	(getter) i8080o_get_m, 		(setter) i8080o_set_m, 		"set m", 				NULL},
 	{"z", 	(getter) i8080o_get_z, 		(setter) i8080o_set_z, 		"set z", 				NULL},

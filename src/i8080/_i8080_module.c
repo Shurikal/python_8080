@@ -4,7 +4,7 @@
 #include "_i8080_constants.h"
 
 
-extern const uint8_t opcodes_cycles[256];
+extern const uint8_t opcodes_lengths[256];
 extern const char *opcodes_names[256];
 
 
@@ -39,7 +39,7 @@ get_instruction_size(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
     }
-    return Py_BuildValue("H", opcodes_cycles[instruction]);
+    return Py_BuildValue("H", opcodes_lengths[instruction]);
 }
 
 static PyObject *
