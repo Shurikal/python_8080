@@ -487,49 +487,6 @@ i8080o_load_rom(i8080oObject *self, PyObject *args, PyObject *keywds)
     return Py_BuildValue("i", fsize);
 }
 
-/* ----------
-read rom at address
-----------  */
-static PyObject *
-i8080o_read_memory(i8080oObject *self, PyObject *args)
-{
-    uint32_t pos;
-    if (!PyArg_ParseTuple(args, "I", &pos)){
-        PyErr_SetString(PyExc_Exception, "Parse error\n");
-        return NULL;
-    }
-
-    if (pos >= MEMORY_SIZE){
-        PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
-        return NULL;
-    }
-
-    return Py_BuildValue("i", self->memory[pos]);
-}
-
-/*
-set rom at address
-*/
-static PyObject *
-i8080o_set_memory(i8080oObject *self, PyObject *args)
-{
-	uint32_t pos;
-	uint8_t val;
-	if (!PyArg_ParseTuple(args, "IB", &pos, &val)){
-		PyErr_SetString(PyExc_Exception, "Parse error\n");
-		return NULL;
-	}
-
-	if (pos >= MEMORY_SIZE){
-		PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
-		return NULL;
-	}
-
-	self->memory[pos] = val;
-
-	return Py_BuildValue("i", self->memory[pos]);
-}
-
 /* ---------- 
 i8080 Object initialization
 ----------  */
@@ -579,7 +536,7 @@ i8080o_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	}
 
 	// Create a new memory object
-	self->memory_new = PyObject_CallObject((PyObject *)&i8080oMemory_Type, NULL);
+	self->memory_obj = PyObject_CallObject((PyObject *)&i8080oMemory_Type, NULL);
 
 	// Set the default values
     self->memory = malloc(MEMORY_SIZE);
@@ -590,11 +547,10 @@ i8080o_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     }
 
 	reset(self);
-	// Crashes
-	//PyObject_SetAttrString((PyObject *)self, "memory", (PyObject *) self->memory_new);
 
+	// pointer magic
+	self->memory_obj->memory = self->memory;
 
-	//PyObject_GenericSetAttr((PyObject *)self, PyUnicode_FromString("memory"), (PyObject *) self->memory_new);
 	return (PyObject *)self;
 }
 
@@ -622,8 +578,6 @@ static PyMethodDef i8080o_methods[] = {
 	{"set_flag", 					(PyCFunction)(void(*)(void))i8080o_set_flag,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("set flag")},
 	{"disassemble",             	(PyCFunction)i8080o_disassemble,                         METH_VARARGS,                   PyDoc_STR("disassemble instruction at current PC")},
     {"load_rom",               		(PyCFunction)(void(*)(void))i8080o_load_rom,             METH_VARARGS | METH_KEYWORDS,   PyDoc_STR("load rom")},
-    {"read_memory",               	(PyCFunction)i8080o_read_memory,                         METH_VARARGS,                   PyDoc_STR("read memory at address")},
-    {"set_memory",                	(PyCFunction)i8080o_set_memory,                          METH_VARARGS,                   PyDoc_STR("set memory at address")},
 	{"run_instruction",        		(PyCFunction)i8080o_run_instruction,                     METH_NOARGS,                    PyDoc_STR("run instruction")},
 	{NULL,              NULL}           /* sentinel */
 };
@@ -950,11 +904,13 @@ i8080o_set_de(i8080oObject* self, PyObject* value, void* closure)
 	return 0;
 }
 
+
+// only getter function is necessary for memory
 static PyObject *
-i8080o_get_memory_new(i8080oObject* self, void* closure)
+i8080o_get_memory(i8080oObject* self, void* closure)
 {
-	Py_INCREF(self->memory_new);
-	return (PyObject *) self->memory_new;
+	Py_INCREF(self->memory_obj);
+	return (PyObject *) self->memory_obj;
 }
 
 
@@ -980,71 +936,8 @@ PyGetSetDef getsets[] = {
 	{"ac", 			(getter) i8080o_get_ac, 			(setter) i8080o_set_ac, 			"set ac", 				NULL},
 	{"int_enable", 	(getter) i8080o_get_int_enable, 	(setter) i8080o_set_int_enable, 	"set int_enable", 		NULL},
 	{"halt", 		(getter) i8080o_get_halt, 			(setter) i8080o_set_halt, 			"set halt", 			NULL},
-	{"memory_new", 	(getter) i8080o_get_memory_new, 	NULL, 								"memory_new", 			NULL},
+	{"memory", 		(getter) i8080o_get_memory, 		NULL, 								"memory", 				NULL},
     {NULL}
-};
-
-/*
-Methods to access the memory with the subscript operator
-*/
-
-
-static Py_ssize_t i8080o_len(i8080oObject* self) {
-	return (Py_ssize_t) MEMORY_SIZE;
-}
-
-static PyObject* i8080o_sq_item(i8080oObject* self, Py_ssize_t index) {
-	if (index >= MEMORY_SIZE) {
-		PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
-		return NULL;
-	}
-	if (index < 0 && index >= -MEMORY_SIZE) {
-		index += MEMORY_SIZE;
-	}
-
-	return Py_BuildValue("i", self->memory[index]);
-}
-
-
-static int i8080o_sq_setitem(i8080oObject* self, Py_ssize_t index, PyObject* value) {
-	if (index >= MEMORY_SIZE) {
-		PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
-		return NULL;
-	}
-	if (index < 0 && index >= -MEMORY_SIZE) {
-		index += MEMORY_SIZE;
-	}
-
-	uint64_t val = PyLong_AsUnsignedLong(value);
-    if (PyErr_Occurred()) {
-        return -1;
-    }
-	if (val > 0xFF){
-		PyErr_SetString(PyExc_ValueError, "Value out of range");
-		return -1;
-	}
-
-	self->memory[index] = val;
-	return 0;
-}
-
-
-static PySequenceMethods i8080o_SeqMethods = {
-	/* PySequenceMethods, implementing the sequence protocol
-	 * references:
-	 * https://docs.python.org/3/c-api/typeobj.html#c.PySequenceMethods
-	 * https://docs.python.org/3/c-api/sequence.html
-	 */
-	(lenfunc)i8080o_len, // sq_length
-	0, // sq_concat
-	0, // sq_repeat
-	(ssizeargfunc)i8080o_sq_item, // sq_item
-	0,
-	(ssizeobjargproc)i8080o_sq_setitem, // sq_ass_item
-	0,
-	0, // sq_contains
-	0, // sq_inplace_concat
-	0, // sq_inplace_repeat
 };
 
 // i8080oObject basic methods
@@ -1062,6 +955,6 @@ PyTypeObject i8080o_Type = {
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = i8080o_methods,
 	.tp_getset = getsets,
-	.tp_as_sequence = &i8080o_SeqMethods,
+	//.tp_as_sequence = &i8080o_SeqMethods,
 //	.tp_members = i8080o_members,
 };

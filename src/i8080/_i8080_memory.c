@@ -87,16 +87,6 @@ i80800Memory_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 		}
 	}
 
-	// Set the default values
-    self->memory = malloc(MEMORY_SIZE);
-
-    if (self->memory == NULL){
-        PyErr_SetString(PyExc_MemoryError, "Could not allocate memory\n");
-        return NULL;
-    }
-
-    memset(self->memory, 0, MEMORY_SIZE);
-
 	return (PyObject *)self;
 }
 
@@ -108,10 +98,6 @@ i8080oMemory_dealloc(i8080oMemory *self)
     #ifdef DEBUG
     printf("Deallocating i8080oMemory\n");
     #endif
-    // free the memory
-    if(self->memory != NULL){
-        free(self->memory);
-    }
 
     Py_XDECREF(self->x_attr);
 
@@ -127,12 +113,6 @@ PyTypeObject i8080oMemory_Type = {
     .tp_basicsize = sizeof(i8080oMemory),
     .tp_dealloc = (destructor)i8080oMemory_dealloc,
 	.tp_new = i80800Memory_new,
-    //.tp_getattr = (getattrfunc)0,
-    //.tp_setattr = (setattrfunc)AVRo_setattr,
-    //.tp_getattro = (getattrofunc)AVRo_getattro,
     .tp_flags = Py_TPFLAGS_DEFAULT,
-    //.tp_methods = i8080o_methods,
-	//.tp_getset = getsets,
 	.tp_as_sequence = &i8080oMemory_SeqMethods,
-//	.tp_members = i8080o_members,
 };

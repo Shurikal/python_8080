@@ -5,7 +5,7 @@
 
 typedef struct {
     PyObject_HEAD
-    uint8_t     *memory;
+    uint8_t     *memory;        // points to the memory of the cpu
     PyObject    *x_attr;        /* Attributes dictionary */
 } i8080oMemory;
 

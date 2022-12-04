@@ -72,7 +72,8 @@ i8080_exec(PyObject *m)
         goto fail;
 
     // don't add the i8080oMemory_Type to the module
-    PyModule_AddType(m, &i8080oMemory_Type);
+    // it's a private type only used by the i8080o_Type
+    // PyModule_AddType(m, &i8080oMemory_Type);
 
     if (PyType_Ready(&i8080o_Type) < 0)
         goto fail;
