@@ -562,6 +562,35 @@ newi8080oObject(PyObject *arg)
     return self;
 }
 
+static PyObject*
+i8080o_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+	#ifdef DEBUG
+	printf("Creating new i8080 object\n");
+	#endif
+	i8080oObject *self;
+	self = (i8080oObject *)type->tp_alloc(type, 0);
+	if (self != NULL) {
+		self->x_attr = PyLong_FromLong(0);
+		if (self->x_attr == NULL) {
+			Py_DECREF(self);
+			return NULL;
+		}
+	}
+
+	// Set the default values
+    self->memory = malloc(MEMORY_SIZE);
+
+	reset(self);
+
+    if (self->memory == NULL){
+        PyErr_SetString(PyExc_MemoryError, "Could not allocate memory\n");
+        return NULL;
+    }
+
+	return (PyObject *)self;
+}
+
 // deallocate memory method
 static void
 i8080o_dealloc(i8080oObject *self)
@@ -915,26 +944,26 @@ i8080o_set_de(i8080oObject* self, PyObject* value, void* closure)
 }
 
 PyGetSetDef getsets[] = {
-	{"a", 	(getter) i8080o_get_a, 		(setter) i8080o_set_a, 		"set a register", 		NULL},
-	{"b", 	(getter) i8080o_get_b, 		(setter) i8080o_set_b, 		"set b register", 		NULL},
-	{"c", 	(getter) i8080o_get_c, 		(setter) i8080o_set_c, 		"set c register", 		NULL},
-	{"d", 	(getter) i8080o_get_d, 		(setter) i8080o_set_d, 		"set d register", 		NULL},
-	{"e", 	(getter) i8080o_get_e, 		(setter) i8080o_set_e, 		"set e register", 		NULL},
-	{"h", 	(getter) i8080o_get_h, 		(setter) i8080o_set_h, 		"set h register", 		NULL},
-	{"l", 	(getter) i8080o_get_l, 		(setter) i8080o_set_l, 		"set l register", 		NULL},
-	{"sp",	(getter) i8080o_get_sp,		(setter) i8080o_set_sp,		"set sp register",		NULL},
-	{"pc",	(getter) i8080o_get_pc,		(setter) i8080o_set_pc,		"set pc register",		NULL},
-	{"bc",  (getter) i8080o_get_bc,    (setter) i8080o_set_bc,     "set bc register",      NULL},
-	{"de",  (getter) i8080o_get_de,     (setter) i8080o_set_de,     "set de register",      NULL},
-	{"hl",	(getter) i8080o_get_hl,		(setter) i8080o_set_hl,	 	"set hl register",		NULL},
-	{"m", 	(getter) i8080o_get_m, 		(setter) i8080o_set_m, 		"set m", 				NULL},
-	{"z", 	(getter) i8080o_get_z, 		(setter) i8080o_set_z, 		"set z", 				NULL},
-	{"s", 	(getter) i8080o_get_s, 		(setter) i8080o_set_s, 		"set s", 				NULL},
-	{"p", 	(getter) i8080o_get_p, 		(setter) i8080o_set_p, 		"set p", 				NULL},
-	{"cy", 	(getter) i8080o_get_cy, 	(setter) i8080o_set_cy, 	"set cy", 				NULL},
-	{"ac", 	(getter) i8080o_get_ac, 	(setter) i8080o_set_ac, 	"set ac", 				NULL},
-	{"int_enable", 	(getter) i8080o_get_int_enable, 	(setter) i8080o_set_int_enable, 	"set int_enable", 	NULL},
-	{"halt", 	(getter) i8080o_get_halt, 	(setter) i8080o_set_halt, 	"set halt", 	NULL},
+	{"a", 			(getter) i8080o_get_a, 				(setter) i8080o_set_a, 				"set a register", 		NULL},
+	{"b", 			(getter) i8080o_get_b, 				(setter) i8080o_set_b, 				"set b register", 		NULL},
+	{"c", 			(getter) i8080o_get_c, 				(setter) i8080o_set_c, 				"set c register", 		NULL},
+	{"d", 			(getter) i8080o_get_d, 				(setter) i8080o_set_d, 				"set d register", 		NULL},
+	{"e", 			(getter) i8080o_get_e, 				(setter) i8080o_set_e, 				"set e register", 		NULL},
+	{"h", 			(getter) i8080o_get_h, 				(setter) i8080o_set_h, 				"set h register", 		NULL},
+	{"l", 			(getter) i8080o_get_l, 				(setter) i8080o_set_l, 				"set l register", 		NULL},
+	{"sp",			(getter) i8080o_get_sp,				(setter) i8080o_set_sp,				"set sp register",		NULL},
+	{"pc",			(getter) i8080o_get_pc,				(setter) i8080o_set_pc,				"set pc register",		NULL},
+	{"bc",  		(getter) i8080o_get_bc,    			(setter) i8080o_set_bc,     		"set bc register",      NULL},
+	{"de",  		(getter) i8080o_get_de,     		(setter) i8080o_set_de,     		"set de register",      NULL},
+	{"hl",			(getter) i8080o_get_hl,				(setter) i8080o_set_hl,	 			"set hl register",		NULL},
+	{"m", 			(getter) i8080o_get_m, 				(setter) i8080o_set_m, 				"set m", 				NULL},
+	{"z", 			(getter) i8080o_get_z, 				(setter) i8080o_set_z, 				"set z", 				NULL},
+	{"s", 			(getter) i8080o_get_s, 				(setter) i8080o_set_s, 				"set s", 				NULL},
+	{"p", 			(getter) i8080o_get_p, 				(setter) i8080o_set_p, 				"set p", 				NULL},
+	{"cy", 			(getter) i8080o_get_cy, 			(setter) i8080o_set_cy, 			"set cy", 				NULL},
+	{"ac", 			(getter) i8080o_get_ac, 			(setter) i8080o_set_ac, 			"set ac", 				NULL},
+	{"int_enable", 	(getter) i8080o_get_int_enable, 	(setter) i8080o_set_int_enable, 	"set int_enable", 		NULL},
+	{"halt", 		(getter) i8080o_get_halt, 			(setter) i8080o_set_halt, 			"set halt", 			NULL},
     {NULL}
 };
 
@@ -983,7 +1012,7 @@ static int i8080o_sq_setitem(i8080oObject* self, Py_ssize_t index, PyObject* val
 }
 
 
-static PySequenceMethods example_classSeqMethods = {
+static PySequenceMethods i8080o_SeqMethods = {
 	/* PySequenceMethods, implementing the sequence protocol
 	 * references:
 	 * https://docs.python.org/3/c-api/typeobj.html#c.PySequenceMethods
@@ -1009,12 +1038,13 @@ PyTypeObject i8080o_Type = {
     .tp_name = "_i8080.i8080oObject",
     .tp_basicsize = sizeof(i8080oObject),
     .tp_dealloc = (destructor)i8080o_dealloc,
+	.tp_new = i8080o_new,
     //.tp_getattr = (getattrfunc)0,
     //.tp_setattr = (setattrfunc)AVRo_setattr,
     //.tp_getattro = (getattrofunc)AVRo_getattro,
     .tp_flags = Py_TPFLAGS_DEFAULT,
     .tp_methods = i8080o_methods,
 	.tp_getset = getsets,
-	.tp_as_sequence = &example_classSeqMethods,
+	.tp_as_sequence = &i8080o_SeqMethods,
 //	.tp_members = i8080o_members,
 };
