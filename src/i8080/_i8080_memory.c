@@ -42,7 +42,7 @@ static int i8080oMemory_sq_setitem(i8080oMemory* self, Py_ssize_t index, PyObjec
         return -1;
     }
 	if (val > 0xFF){
-		PyErr_SetString(PyExc_ValueError, "Value out of range");
+		PyErr_SetString(PyExc_ValueError, "Value out of range\n");
 		return -1;
 	}
 

@@ -34,6 +34,7 @@ void reset(i8080oObject *self){
 	if (self->memory != NULL){
 		memset(self->memory, 0, MEMORY_SIZE);
 	}
+	memset(&self->IO, 0, sizeof(self->IO));
 }
 
 static PyObject *
