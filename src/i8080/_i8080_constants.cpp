@@ -1,5 +1,5 @@
-#include "_i8080_constants.h"
-
+#include "_i8080_constants.hpp"
+#include <string>
 
 // Opcodes from here, http://www.emulator101.com/reference/8080-by-opcode.html
 const uint8_t opcodes_lengths[256] = {
@@ -42,7 +42,7 @@ const uint8_t opcodes_cycles[256]={
 /* E */ 5, 10,10,18,11,11,7, 11,5, 5, 10,5, 11,11,7, 11,
 /* F */ 5, 10,10,4, 11,11,7, 11,5, 5, 10,4, 11,11,7, 11 };
 
-const char *opcodes_names[256] = {
+const std::string opcodes_names[256] = {
     "NOP",          // 0x00
     "LXI B,D16",    // 0x01
     "STAX B",       // 0x02

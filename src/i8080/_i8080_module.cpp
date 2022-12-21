@@ -1,22 +1,62 @@
-#include <iostream>
 #include <Python.h>
+#include "_i8080_module.hpp"
+#include "_i8080_constants.hpp"
+
+#include <iostream>
+#include <string>
+
+extern const uint8_t opcodes_lengths[256];
+extern const std::string opcodes_names[256];
 
 
 PyDoc_STRVAR(module_doc, "This module is for emulating the Intel 8080 CPU.");
 
+
+/* ---------- 
+Module Methods
+----------  */
+
+
+static PyObject *
+get_instruction_size(PyObject *self, PyObject *args)
+{
+    uint8_t instruction;
+    // parse the argument to a uint8_t
+    if (!PyArg_ParseTuple(args, "b", &instruction)){
+        // throw parse error
+        PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
+    }
+    return Py_BuildValue("H", opcodes_lengths[instruction]);
+}
+
+static PyObject *
+get_instruction_name(PyObject *self, PyObject *args)
+{
+    uint8_t instruction;
+    // parse the argument to a uint8_t
+    if (!PyArg_ParseTuple(args, "b", &instruction)){
+        PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
+    }
+    #ifdef DEBUG
+    printf("Instruction: %d", instruction);
+    #endif
+    return Py_BuildValue("s", opcodes_names[instruction].c_str());
+}
+
 static PyMethodDef i8080_module_methods[] = {
+    {"get_instruction_size", (PyCFunction)get_instruction_size, METH_VARARGS, "Get the size of an instruction in bytes."},
+    {"get_instruction_name", (PyCFunction)get_instruction_name, METH_VARARGS, "Get the name of an instruction."},
 	{NULL, NULL}
 };
-
-
-
 
 // Slot initialization
 static int64_t
 i8080_exec(PyObject *m)
 {
     #ifdef DEBUG
-    printf("i8080_exec\n");
+    std::cout << "i8080_exec\n";
     #endif
     /*
     if (PyType_Ready(&i8080oMemory_Type) < 0)
