@@ -1,9 +1,11 @@
 #include <Python.h>
 #include "_i8080_module.hpp"
 #include "_i8080_constants.hpp"
+#include "_i8080_object.hpp"
 
 #include <iostream>
 #include <string>
+#include <cstdint>
 
 extern const uint8_t opcodes_lengths[256];
 extern const std::string opcodes_names[256];
@@ -20,11 +22,13 @@ Module Methods
 static PyObject *
 get_instruction_size(PyObject *self, PyObject *args)
 {
-    uint8_t instruction;
-    // parse the argument to a uint8_t
-    if (!PyArg_ParseTuple(args, "b", &instruction)){
-        // throw parse error
+    uint64_t instruction;
+    if (!PyArg_ParseTuple(args, "K", &instruction)){
         PyErr_SetString(PyExc_Exception, "Parse error");
+        return NULL;
+    }
+    if (instruction > 255){
+        PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
         return NULL;
     }
     return Py_BuildValue("H", opcodes_lengths[instruction]);
@@ -33,15 +37,19 @@ get_instruction_size(PyObject *self, PyObject *args)
 static PyObject *
 get_instruction_name(PyObject *self, PyObject *args)
 {
-    uint8_t instruction;
-    // parse the argument to a uint8_t
-    if (!PyArg_ParseTuple(args, "b", &instruction)){
+    uint64_t instruction;
+    if (!PyArg_ParseTuple(args, "K", &instruction)){
         PyErr_SetString(PyExc_Exception, "Parse error");
         return NULL;
     }
     #ifdef DEBUG
-    printf("Instruction: %d", instruction);
+    std::cout << "Instruction: " << instruction << std::endl;
     #endif
+    if (instruction > 255){
+        PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
+        return NULL;
+    }
+
     return Py_BuildValue("s", opcodes_names[instruction].c_str());
 }
 
@@ -61,7 +69,7 @@ i8080_exec(PyObject *m)
     /*
     if (PyType_Ready(&i8080oMemory_Type) < 0)
         goto fail;
-
+    */
     // don't add the i8080oMemory_Type to the module
     // it's a private type only used by the i8080o_Type
     // PyModule_AddType(m, &i8080oMemory_Type);
@@ -71,7 +79,7 @@ i8080_exec(PyObject *m)
 
     // add the i8080o_Type to the module
     PyModule_AddType(m, &i8080o_Type);
-    */
+    
     return 0;
  fail:
     Py_XDECREF(m);
