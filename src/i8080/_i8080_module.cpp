@@ -1,4 +1,16 @@
 #include <Python.h>
+#include <iostream>
+#include <cstring>
+#include <ostream>
+#include <sstream>
+#include "methodobject.h"
+#include "modsupport.h"
+#include "object.h"
+#include "pyport.h"
+#include "tupleobject.h"
+#include "unicodeobject.h"
+#include <structmember.h>
+
 #include "_i8080_module.hpp"
 #include "_i8080_constants.hpp"
 #include "_i8080_object.hpp"
@@ -64,26 +76,20 @@ static int64_t
 i8080_exec(PyObject *m)
 {
     #ifdef DEBUG
-    std::cout << "i8080_exec\n";
+    std::cout << "Initializing i8080 module" << std::endl;
     #endif
-    /*
-    if (PyType_Ready(&i8080oMemory_Type) < 0)
-        goto fail;
-    */
-    // don't add the i8080oMemory_Type to the module
-    // it's a private type only used by the i8080o_Type
-    // PyModule_AddType(m, &i8080oMemory_Type);
+    PyObject *myclass = PyType_FromSpec(&spec_i8080C);
+    if (myclass == NULL){
+        return -1;
+    }
+    Py_INCREF(myclass);
 
-    if (PyType_Ready(&i8080o_Type) < 0)
-        goto fail;
+    if(PyModule_AddObject(m, "i8080C", myclass) < 0){
+        Py_DECREF(myclass);
+        return -1;
+    }
 
-    // add the i8080o_Type to the module
-    PyModule_AddType(m, &i8080o_Type);
-    
     return 0;
- fail:
-    Py_XDECREF(m);
-    return -1;
 }
 
 

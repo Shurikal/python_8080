@@ -1,78 +1,85 @@
-#ifndef _I8080_OBJECT_HPP
-#define _I8080_OBJECT_HPP
+#ifndef MY_CLASS_PY_TYPE_H
+#define MY_CLASS_PY_TYPE_H
+
+#include <Python.h>
+#include <structmember.h>
 
 
-#include "Python.h"
+class i8080C
+{
+public:
+    i8080C() : m_cnt(0) {std::cout << "i8080C::i8080C() called!" << std::endl;};
 
-#include <cstdint>
+    virtual ~i8080C() {std::cout << "i8080C::~i8080C() called" << std::endl;};
 
+    unsigned long addOne() { return ++m_cnt;};
 
-
-class i8080oClass {
-    public:
-
-    struct ConditionCodes {
-    uint8_t		z:1;
-    uint8_t		s:1;
-    uint8_t		p:1;
-    uint8_t		cy:1;
-    uint8_t		ac:1;
-    // Custom added flags
-    uint8_t     halt:1;
-    uint8_t     int_enable:1;
-    uint8_t		pad:1;
-};
-
-        uint8_t     A;
-        uint8_t     B;
-        uint8_t     C;
-        uint8_t     D;
-        uint8_t     E;
-        uint8_t     H;
-        uint8_t     L;
-        uint16_t    SP;
-        uint16_t    PC;
-        struct ConditionCodes  CC;
-        uint8_t    IO[256];   
-        uint8_t     *memory;        // Todo, make this a separate object for access like cpu.memory[] and not cpu[]
-        //i8080oMemory *memory_obj;
-
-        i8080oClass();
-        ~i8080oClass();
-
-        //static PyObject* newi8080(PyTypeObject *type, PyObject *args, PyObject *kwds);
-        static void test();
+private:
+    unsigned long m_cnt;
 };
 
 typedef struct {
     PyObject_HEAD
-    i8080oClass *cpu;
-    PyObject    *x_attr;        /* Attributes dictionary */
-} i8080oObject;
+    int         m_value;
+    i8080C*    m_i8080C;
+} i8080CObject;
 
-PyObject*
-i8080o_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
+int i8080C_init(PyObject *self, PyObject *args, PyObject *kwds);
+PyObject *i8080C_new(PyTypeObject *subtype, PyObject *args, PyObject *kwds);
+void i8080C_dealloc(i8080CObject *self);
+PyObject* i8080C_addOne(PyObject *self, PyObject *args);
 
-PyObject *i8080o_reset(i8080oObject *self, PyObject *args);
-
-
-static PyMethodDef i8080o_methods[] = {
-	{"reset",                  		(PyCFunction)i8080o_reset,                               METH_NOARGS, 					 PyDoc_STR("Reset the i8080")},
-	{NULL,              NULL}           /* sentinel */
+static PyMethodDef i8080C_methods[] = {
+    {"addOne", (PyCFunction)i8080C_addOne, METH_NOARGS,  PyDoc_STR("Return an incrmented integer")},
+    {NULL, NULL} /* Sentinel */
 };
 
-
-// i8080oObject basic methods
-// https://docs.python.org/3/c-api/typeobj.html
-// not static because it is used in the module init function
-static PyTypeObject i8080o_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "_i8080.i8080uC",
-    .tp_basicsize = sizeof(i8080oObject),
-    .tp_new = i8080o_new,
-    .tp_methods = i8080o_methods,
+static struct PyMemberDef i8080C_members[] = {
+    {"value", T_INT, offsetof(i8080CObject, m_value)},
+    {NULL} /* Sentinel */
 };
 
+static PyObject *i8080C_getvalue(i8080CObject *self, void *closure){
+    return PyLong_FromLong(self->m_value);
+}
 
+static int i8080C_setvalue(i8080CObject *self, PyObject *value, void *closure){
+    if(!value){
+        PyErr_SetString(PyExc_TypeError, "Cannot delete the value attribute");
+        return -1;
+    }
+
+    if(!PyLong_Check(value)){
+        PyErr_SetString(PyExc_TypeError, "The value attribute value must be an integer");
+        return -1;
+    }
+
+    self->m_value = PyLong_AsLong(value);
+    return 0;
+}
+
+static PyGetSetDef i8080C_getseters[] = {
+    {"value", (getter)i8080C_getvalue, (setter)i8080C_setvalue, PyDoc_STR("Value of the object"), NULL},
+    {NULL} /* Sentinel */
+};
+
+static PyType_Slot i8080C_slots[] = {
+    {Py_tp_doc, (void*)PyDoc_STR("i8080C objects")},
+    {Py_tp_new, (void*)i8080C_new},
+    {Py_tp_init, (void*)i8080C_init},
+    {Py_tp_dealloc, (void*)i8080C_dealloc},
+    {Py_tp_getset, i8080C_getseters},
+    //{Py_tp_members,  i8080C_members},
+    {Py_tp_methods, i8080C_methods},
+    {0, 0}
+};
+
+static PyType_Spec spec_i8080C = {
+    "i8080C",                                  // name
+    sizeof(i8080CObject) + sizeof(i8080C),    // basicsize
+    0,                                          // itemsize
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   // flags
+    i8080C_slots                               // slots
+};
 
 #endif
