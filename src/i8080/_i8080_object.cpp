@@ -71,10 +71,29 @@ void i8080C_dealloc(i8080CObject *self){
     Py_DECREF(tp);
 };
 
-PyObject* i8080C_addOne(PyObject *self, PyObject *args){
+PyObject* i8080C_test(PyObject *self, PyObject *args){
     assert(self);
 
     i8080CObject* _self = reinterpret_cast<i8080CObject*>(self);
-    unsigned long val = _self->m_i8080C->addOne();
-    return PyLong_FromUnsignedLong(val);
+
+    Py_RETURN_NONE;
+}
+
+PyObject *i8080C_getvalue(i8080CObject *self, void *closure){
+    return PyLong_FromLong(self->m_value);
+}
+
+int i8080C_setvalue(i8080CObject *self, PyObject *value, void *closure){
+    if(!value){
+        PyErr_SetString(PyExc_TypeError, "Cannot delete the value attribute");
+        return -1;
+    }
+
+    if(!PyLong_Check(value)){
+        PyErr_SetString(PyExc_TypeError, "The value attribute value must be an integer");
+        return -1;
+    }
+
+    self->m_value = PyLong_AsLong(value);
+    return 0;
 }
