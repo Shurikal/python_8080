@@ -4,6 +4,7 @@
 #include "_i8080_object.hpp"
 #include <exception>
 #include <string>
+#include "_i8080_class.hpp"
 
 
 PyObject *i8080C_new(PyTypeObject *type, PyObject *args, PyObject *kwds){

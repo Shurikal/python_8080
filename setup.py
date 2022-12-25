@@ -9,6 +9,7 @@ setup(
             sources=["src/i8080/_i8080_module.cpp", 
                     "src/i8080/_i8080_constants.cpp",
                     "src/i8080/_i8080_object.cpp", 
+                    "src/i8080/_i8080_class.cpp",
                     #"src/i8080/_i8080_cpu.c",
                     #"src/i8080/_i8080_memory.c"
                     ], # all sources are compiled into a single binary file

@@ -3,20 +3,11 @@
 
 #include <Python.h>
 #include <structmember.h>
+#include <iostream>
+#include <cstring>
 
+#include "_i8080_class.hpp"
 
-class i8080C
-{
-public:
-    i8080C() : m_cnt(0) {std::cout << "i8080C::i8080C() called!" << std::endl;};
-
-    virtual ~i8080C() {std::cout << "i8080C::~i8080C() called" << std::endl;};
-
-    unsigned long addOne() { return ++m_cnt;};
-
-private:
-    unsigned long m_cnt;
-};
 
 typedef struct {
     PyObject_HEAD
@@ -44,21 +35,21 @@ static PyGetSetDef i8080C_getseters[] = {
 };
 
 static PyType_Slot i8080C_slots[] = {
-    {Py_tp_doc, (void*)PyDoc_STR("i8080C docstring")},
-    {Py_tp_new, (void*)i8080C_new},
-    {Py_tp_init, (void*)i8080C_init},
-    {Py_tp_dealloc, (void*)i8080C_dealloc},
-    {Py_tp_getset, i8080C_getseters},
-    {Py_tp_methods, i8080C_methods},
+    {Py_tp_doc,         (void*)PyDoc_STR("i8080C docstring")},
+    {Py_tp_new,         (void*)i8080C_new},
+    {Py_tp_init,        (void*)i8080C_init},
+    {Py_tp_dealloc,     (void*)i8080C_dealloc},
+    {Py_tp_getset,      i8080C_getseters},
+    {Py_tp_methods,     i8080C_methods},
     {0, 0}
 };
 
 static PyType_Spec spec_i8080C = {
-    "i8080C",                                  // name
-    sizeof(i8080CObject) + sizeof(i8080C),    // basicsize
+    "i8080C",                                   // name
+    sizeof(i8080CObject) + sizeof(i8080C),      // basicsize
     0,                                          // itemsize
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   // flags
-    i8080C_slots                               // slots
+    i8080C_slots                                // slots
 };
 
 #endif
