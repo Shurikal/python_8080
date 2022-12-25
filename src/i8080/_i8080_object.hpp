@@ -66,9 +66,9 @@ static PyGetSetDef i8080C_getseters[] = {
     {"e"    , (getter)i8080C_getE,      (setter)i8080C_setE,    PyDoc_STR("E register"), NULL},
     {"h"    , (getter)i8080C_getH,      (setter)i8080C_setH,    PyDoc_STR("H register"), NULL},
     {"l"    , (getter)i8080C_getL,      (setter)i8080C_setL,    PyDoc_STR("L register"), NULL},
-  /*  {"sp"   , (getter)i8080C_getSP,     (setter)i8080C_setSP,   PyDoc_STR("Stack pointer"), NULL},
+    {"sp"   , (getter)i8080C_getSP,     (setter)i8080C_setSP,   PyDoc_STR("Stack pointer"), NULL},
     {"pc"   , (getter)i8080C_getPC,     (setter)i8080C_setPC,   PyDoc_STR("Program counter"), NULL},
-    {"cc"   , (getter)i8080C_getCC,     (setter)i8080C_setCC,   PyDoc_STR("Condition codes"), NULL},*/
+  /*  {"cc"   , (getter)i8080C_getCC,     (setter)i8080C_setCC,   PyDoc_STR("Condition codes"), NULL},*/
     {NULL} /* Sentinel */
 };
 
@@ -83,7 +83,7 @@ static PyType_Slot i8080C_slots[] = {
 };
 
 static PyType_Spec spec_i8080C = {
-    "i8080C",                                   // name
+    "i8080uC",                                   // name
     sizeof(i8080CObject) + sizeof(i8080C),      // basicsize
     0,                                          // itemsize
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   // flags

@@ -84,7 +84,7 @@ i8080_exec(PyObject *m)
     }
     Py_INCREF(myclass);
 
-    if(PyModule_AddObject(m, "i8080C", myclass) < 0){
+    if(PyModule_AddObject(m, "i8080uC", myclass) < 0){
         Py_DECREF(myclass);
         return -1;
     }

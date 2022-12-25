@@ -80,12 +80,12 @@ PyObject* i8080C_test(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
-#define get_register(getter) \
+#define get_uint_8t(getter) \
     assert(self);\
     i8080CObject* _self = reinterpret_cast<i8080CObject*>(self);\
     return Py_BuildValue("i", _self->m_i8080C->getter());\
 
-#define set_register(setter) \
+#define set_uint8_t(setter) \
     assert(self);\
     uint64_t val = PyLong_AsUnsignedLong(value);\
     if (PyErr_Occurred()) {\
@@ -99,58 +99,94 @@ PyObject* i8080C_test(PyObject *self, PyObject *args){
     _self->m_i8080C->setter(val);\
     return 0;\
 
+
+#define get_uint16_t(getter) \
+    assert(self);\
+    i8080CObject* _self = reinterpret_cast<i8080CObject*>(self);\
+    return Py_BuildValue("i", _self->m_i8080C->getter());\
+
+#define set_uint16_t(setter) \
+    assert(self);\
+    uint64_t val = PyLong_AsUnsignedLong(value);\
+    if (PyErr_Occurred()) {\
+        return -1;\
+    }\
+    if (val > 0xFFFF){\
+        PyErr_SetString(PyExc_ValueError, "Value out of range");\
+        return -1;\
+    }\
+    i8080CObject* _self = reinterpret_cast<i8080CObject*>(self);\
+    _self->m_i8080C->setter(val);\
+    return 0;\
+
 PyObject *i8080C_getA(i8080CObject *self, void *closure){
-    get_register(getA)
+    get_uint_8t(getA)
 }
 
 int i8080C_setA(i8080CObject *self, PyObject *value, void *closure){
-    set_register(setA)
+    set_uint8_t(setA)
 }
 
 PyObject *i8080C_getB(i8080CObject *self, void *closure){
-    get_register(getB)
+    get_uint_8t(getB)
 }
 
 int i8080C_setB(i8080CObject *self, PyObject *value, void *closure){
-    set_register(setB)
+    set_uint8_t(setB)
 }
 
 PyObject *i8080C_getC(i8080CObject *self, void *closure){
-    get_register(getC)
+    get_uint_8t(getC)
 }
 
 int i8080C_setC(i8080CObject *self, PyObject *value, void *closure){
-    set_register(setC)
+    set_uint8_t(setC)
 }
 
 PyObject *i8080C_getD(i8080CObject *self, void *closure){
-    get_register(getD)
+    get_uint_8t(getD)
 }
 
 int i8080C_setD(i8080CObject *self, PyObject *value, void *closure){
-    set_register(setD)
+    set_uint8_t(setD)
 }
 
 PyObject *i8080C_getE(i8080CObject *self, void *closure){
-    get_register(getE)
+    get_uint_8t(getE)
 }
 
 int i8080C_setE(i8080CObject *self, PyObject *value, void *closure){
-    set_register(setE)
+    set_uint8_t(setE)
 }
 
 PyObject *i8080C_getH(i8080CObject *self, void *closure){
-    get_register(getH)
+    get_uint_8t(getH)
 }
 
 int i8080C_setH(i8080CObject *self, PyObject *value, void *closure){
-    set_register(setH)
+    set_uint8_t(setH)
 }
 
 PyObject *i8080C_getL(i8080CObject *self, void *closure){
-    get_register(getL)
+    get_uint_8t(getL)
 }
 
 int i8080C_setL(i8080CObject *self, PyObject *value, void *closure){
-    set_register(setL)
+    set_uint8_t(setL)
+}
+
+PyObject *i8080C_getSP(i8080CObject *self, void *closure){
+    get_uint16_t(getSP)
+}
+
+int i8080C_setSP(i8080CObject *self, PyObject *value, void *closure){
+    set_uint16_t(setSP)
+}
+
+PyObject *i8080C_getPC(i8080CObject *self, void *closure){
+    get_uint16_t(getPC)
+}
+
+int i8080C_setPC(i8080CObject *self, PyObject *value, void *closure){
+    set_uint16_t(setPC)
 }
