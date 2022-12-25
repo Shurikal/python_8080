@@ -80,21 +80,77 @@ PyObject* i8080C_test(PyObject *self, PyObject *args){
     Py_RETURN_NONE;
 }
 
-PyObject *i8080C_getvalue(i8080CObject *self, void *closure){
-    return PyLong_FromLong(self->m_value);
+#define get_register(getter) \
+    assert(self);\
+    i8080CObject* _self = reinterpret_cast<i8080CObject*>(self);\
+    return Py_BuildValue("i", _self->m_i8080C->getter());\
+
+#define set_register(setter) \
+    assert(self);\
+    uint64_t val = PyLong_AsUnsignedLong(value);\
+    if (PyErr_Occurred()) {\
+        return -1;\
+    }\
+	if (val > 0xFF){\
+		PyErr_SetString(PyExc_ValueError, "Value out of range");\
+		return -1;\
+	}\
+    i8080CObject* _self = reinterpret_cast<i8080CObject*>(self);\
+    _self->m_i8080C->setter(val);\
+    return 0;\
+
+PyObject *i8080C_getA(i8080CObject *self, void *closure){
+    get_register(getA)
 }
 
-int i8080C_setvalue(i8080CObject *self, PyObject *value, void *closure){
-    if(!value){
-        PyErr_SetString(PyExc_TypeError, "Cannot delete the value attribute");
-        return -1;
-    }
+int i8080C_setA(i8080CObject *self, PyObject *value, void *closure){
+    set_register(setA)
+}
 
-    if(!PyLong_Check(value)){
-        PyErr_SetString(PyExc_TypeError, "The value attribute value must be an integer");
-        return -1;
-    }
+PyObject *i8080C_getB(i8080CObject *self, void *closure){
+    get_register(getB)
+}
 
-    self->m_value = PyLong_AsLong(value);
-    return 0;
+int i8080C_setB(i8080CObject *self, PyObject *value, void *closure){
+    set_register(setB)
+}
+
+PyObject *i8080C_getC(i8080CObject *self, void *closure){
+    get_register(getC)
+}
+
+int i8080C_setC(i8080CObject *self, PyObject *value, void *closure){
+    set_register(setC)
+}
+
+PyObject *i8080C_getD(i8080CObject *self, void *closure){
+    get_register(getD)
+}
+
+int i8080C_setD(i8080CObject *self, PyObject *value, void *closure){
+    set_register(setD)
+}
+
+PyObject *i8080C_getE(i8080CObject *self, void *closure){
+    get_register(getE)
+}
+
+int i8080C_setE(i8080CObject *self, PyObject *value, void *closure){
+    set_register(setE)
+}
+
+PyObject *i8080C_getH(i8080CObject *self, void *closure){
+    get_register(getH)
+}
+
+int i8080C_setH(i8080CObject *self, PyObject *value, void *closure){
+    set_register(setH)
+}
+
+PyObject *i8080C_getL(i8080CObject *self, void *closure){
+    get_register(getL)
+}
+
+int i8080C_setL(i8080CObject *self, PyObject *value, void *closure){
+    set_register(setL)
 }

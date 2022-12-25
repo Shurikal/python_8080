@@ -25,12 +25,50 @@ static PyMethodDef i8080C_methods[] = {
     {NULL, NULL} /* Sentinel */
 };
 
-PyObject *i8080C_getvalue(i8080CObject *self, void *closure);
+// Getter and setter for the object
 
-int i8080C_setvalue(i8080CObject *self, PyObject *value, void *closure);
+PyObject *i8080C_getA(i8080CObject *self, void *closure);
+int i8080C_setA(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getB(i8080CObject *self, void *closure);
+int i8080C_setB(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getC(i8080CObject *self, void *closure);
+int i8080C_setC(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getD(i8080CObject *self, void *closure);
+int i8080C_setD(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getE(i8080CObject *self, void *closure);
+int i8080C_setE(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getH(i8080CObject *self, void *closure);
+int i8080C_setH(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getL(i8080CObject *self, void *closure);
+int i8080C_setL(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getSP(i8080CObject *self, void *closure);
+int i8080C_setSP(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getPC(i8080CObject *self, void *closure);
+int i8080C_setPC(i8080CObject *self, PyObject *value, void *closure);
+
+PyObject *i8080C_getCC(i8080CObject *self, void *closure);
+int i8080C_setCC(i8080CObject *self, PyObject *value, void *closure);
+
 
 static PyGetSetDef i8080C_getseters[] = {
-    {"value", (getter)i8080C_getvalue, (setter)i8080C_setvalue, PyDoc_STR("Value of the object"), NULL},
+    {"a"    , (getter)i8080C_getA,      (setter)i8080C_setA,    PyDoc_STR("A register"), NULL},
+    {"b"    , (getter)i8080C_getB,      (setter)i8080C_setB,    PyDoc_STR("B register"), NULL},
+    {"c"    , (getter)i8080C_getC,      (setter)i8080C_setC,    PyDoc_STR("C register"), NULL},
+    {"d"    , (getter)i8080C_getD,      (setter)i8080C_setD,    PyDoc_STR("D register"), NULL},
+    {"e"    , (getter)i8080C_getE,      (setter)i8080C_setE,    PyDoc_STR("E register"), NULL},
+    {"h"    , (getter)i8080C_getH,      (setter)i8080C_setH,    PyDoc_STR("H register"), NULL},
+    {"l"    , (getter)i8080C_getL,      (setter)i8080C_setL,    PyDoc_STR("L register"), NULL},
+  /*  {"sp"   , (getter)i8080C_getSP,     (setter)i8080C_setSP,   PyDoc_STR("Stack pointer"), NULL},
+    {"pc"   , (getter)i8080C_getPC,     (setter)i8080C_setPC,   PyDoc_STR("Program counter"), NULL},
+    {"cc"   , (getter)i8080C_getCC,     (setter)i8080C_setCC,   PyDoc_STR("Condition codes"), NULL},*/
     {NULL} /* Sentinel */
 };
 
