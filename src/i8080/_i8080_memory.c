@@ -31,7 +31,7 @@ static PyObject* i8080oMemory_sq_item(i8080oMemory* self, Py_ssize_t index) {
 static int i8080oMemory_sq_setitem(i8080oMemory* self, Py_ssize_t index, PyObject* value) {
 	if (index >= MEMORY_SIZE) {
 		PyErr_SetString(PyExc_IndexError, "Out of bounds\n");
-		return NULL;
+		return -1;
 	}
 	if (index < 0 && index >= -MEMORY_SIZE) {
 		index += MEMORY_SIZE;
